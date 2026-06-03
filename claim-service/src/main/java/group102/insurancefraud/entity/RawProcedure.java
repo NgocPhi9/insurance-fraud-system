@@ -1,0 +1,26 @@
+package group102.insurancefraud.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Table(name = "RAW_PROCEDURES")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class RawProcedure {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long procedureId;
+
+    @Column(name = "ICD9_PRCDR_CD")
+    private String icd9PrcdrCd;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "RAW_CLAIM_ID", nullable = false)
+    @ToString.Exclude
+    private RawClaim rawClaim;
+}

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Quản lý Người dùng')}"></head>
+<body class="bg-light">
+<div class="wrapper d-flex">
+  <div th:replace="~{layout/sidebar :: sidebar}"></div>
+  <div id="sidebarOverlay" class="sidebar-overlay d-none"></div>
+  <div class="main-content d-flex flex-column flex-grow-1">
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <main class="flex-grow-1 p-4">
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h5 class="fw-bold mb-0">Quản lý Người dùng</h5>
+          <span class="text-muted small">
+            Tổng: <strong th:text="${totalUsers}">0</strong> tài khoản
+          </span>
+        </div>
+        <a th:href="@{/users/create}" class="btn btn-primary btn-sm">
+          <i class="bi bi-person-plus me-1"></i>Tạo tài khoản
+        </a>
+      </div>
+
+      <!-- Flash messages -->
+      <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show py-2" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        <span th:text="${successMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        <span th:text="${errorMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+          <form th:action="@{/users}" method="get" class="row g-2 align-items-center">
+            <!-- Tìm kiếm -->
+            <div class="col-md-4">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white">
+                  <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control border-start-0"
+                       placeholder="Tìm theo tên, email...">
+              </div>
+            </div>
+            <!-- Lọc role -->
+            <div class="col-md-3">
+              <select name="role" id="roleFilter" class="form-select form-select-sm"
+                      onchange="this.form.submit()">
+                <option value="">Tất cả role</option>
+                <option th:each="r : ${roles}"
+                        th:value="${r.name()}"
+                        th:text="${r.name()}"
+                        th:selected="${selectedRole == r.name()}">
+                </option>
+              </select>
+            </div>
+            <!-- Lọc trạng thái -->
+            <div class="col-md-2">
+              <select name="status" id="statusFilter" class="form-select form-select-sm"
+                      onchange="this.form.submit()">
+                <option value="">Tất cả trạng thái</option>
+                <option value="ACTIVE"   th:selected="${selectedStatus == 'ACTIVE'}">Hoạt động</option>
+                <option value="INACTIVE" th:selected="${selectedStatus == 'INACTIVE'}">Bị khóa</option>
+              </select>
+            </div>
+            <!-- Reset -->
+            <div class="col-md-auto ms-auto">
+              <a th:href="@{/users}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="usersTable">
+              <thead class="table-light">
+              <tr>
+                <th class="ps-3">#</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th class="text-center">Role</th>
+                <th>Phòng ban</th>
+                <th class="text-center">Trạng thái</th>
+                <th class="text-center pe-3">Thao tác</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="user, stat : ${users}"
+                  class="user-row"
+                  th:attr="data-name=${user.fullName},data-email=${user.email}">
+
+                <!-- STT -->
+                <td class="ps-3 text-muted small" th:text="${stat.index + 1}">1</td>
+
+                <!-- Tên -->
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center
+                                justify-content-center flex-shrink-0"
+                         style="width:32px;height:32px;font-size:0.75rem;">
+                      <span th:text="${#strings.toUpperCase(#strings.substring(user.fullName,0,1))}">A</span>
+                    </div>
+                    <span class="fw-semibold" th:text="${user.fullName}">Nguyễn Văn A</span>
+                  </div>
+                </td>
+
+                <!-- Email -->
+                <td class="text-muted" th:text="${user.email}">email@example.com</td>
+
+                <!-- Role badge -->
+                <td class="text-center">
+                  <span th:switch="${user.role}">
+                    <span th:case="'ADMIN'"       class="badge bg-danger">ADMIN</span>
+                    <span th:case="'INVESTIGATOR'" class="badge bg-primary">INVESTIGATOR</span>
+                    <span th:case="'STAFF'"        class="badge bg-success">STAFF</span>
+                    <span th:case="*"              class="badge bg-secondary" th:text="${user.role}">—</span>
+                  </span>
+                </td>
+
+                <!-- Phòng ban -->
+                <td class="text-muted small" th:text="${user.department} ?: '—'">—</td>
+
+                <!-- Trạng thái -->
+                <td class="text-center">
+                  <span th:if="${user.status == 'ACTIVE'}" class="badge bg-success-subtle text-success border border-success-subtle">
+                    <i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>Hoạt động
+                  </span>
+                  <span th:unless="${user.status == 'ACTIVE'}" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                    <i class="bi bi-lock-fill me-1" style="font-size:0.65rem;"></i>Bị khóa
+                  </span>
+                </td>
+
+                <!-- Thao tác -->
+                <td class="text-center pe-3">
+                  <div class="d-flex justify-content-center gap-1">
+                    <!-- Nút sửa -->
+                    <a th:href="@{/users/{id}/edit(id=${user.userId})}"
+                       class="btn btn-sm btn-outline-primary"
+                       title="Chỉnh sửa">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <!-- Nút khóa / mở khóa -->
+                    <button class="btn btn-sm"
+                            th:classappend="${user.status == 'ACTIVE'} ? 'btn-outline-warning' : 'btn-outline-success'"
+                            th:title="${user.status == 'ACTIVE'} ? 'Khóa tài khoản' : 'Mở khóa tài khoản'"
+                            th:attr="data-user-id=${user.userId}, data-user-name=${user.fullName}, data-action=${user.status == 'ACTIVE'} ? 'lock' : 'unlock'"
+                            onclick="confirmToggle(this)"
+                            type="button">
+                      <i th:class="${user.status == 'ACTIVE'} ? 'bi bi-lock' : 'bi bi-unlock'"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Empty state -->
+              <tr th:if="${users.isEmpty()}">
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="bi bi-people fs-3 d-block mb-2"></i>
+                  Không có tài khoản nào
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+  </div>
+</div>
+
+<!-- Modal xác nhận khóa / mở khóa -->
+<div class="modal fade" id="confirmToggleModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h6 class="modal-title fw-bold" id="confirmToggleTitle">Xác nhận</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <p class="mb-0 text-muted small" id="confirmToggleBody"></p>
+      </div>
+      <div class="modal-footer border-0 pt-1">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+        <form id="toggleStatusForm" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <button type="submit" class="btn btn-sm" id="confirmToggleBtn">Xác nhận</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+<script th:inline="javascript">
+  // ── Client-side search ───────────────────────────────────────────────────
+  document.getElementById('searchInput').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.user-row').forEach(row => {
+      const name  = (row.dataset.name  || '').toLowerCase();
+      const email = (row.dataset.email || '').toLowerCase();
+      row.style.display = (name.includes(q) || email.includes(q)) ? '' : 'none';
+    });
+  });
+
+  // ── Modal khóa / mở khóa ─────────────────────────────────────────────────
+  function confirmToggle(btn) {
+    const userId   = btn.dataset.userId;
+    const userName = btn.dataset.userName;
+    const action   = btn.dataset.action; // 'lock' | 'unlock'
+
+    const modal  = new bootstrap.Modal(document.getElementById('confirmToggleModal'));
+    const title  = document.getElementById('confirmToggleTitle');
+    const body   = document.getElementById('confirmToggleBody');
+    const form   = document.getElementById('toggleStatusForm');
+    const submit = document.getElementById('confirmToggleBtn');
+
+    if (action === 'lock') {
+      title.textContent  = 'Khóa tài khoản';
+      body.textContent   = `Bạn có chắc muốn khóa tài khoản của "${userName}"?`;
+      submit.className   = 'btn btn-sm btn-warning';
+      submit.textContent = 'Khóa';
+    } else {
+      title.textContent  = 'Mở khóa tài khoản';
+      body.textContent   = `Bạn có chắc muốn mở khóa tài khoản của "${userName}"?`;
+      submit.className   = 'btn btn-sm btn-success';
+      submit.textContent = 'Mở khóa';
+    }
+
+    form.action = `/users/${userId}/toggle-status`;
+    modal.show();
+  }
+</script>
+</body>
+</html>

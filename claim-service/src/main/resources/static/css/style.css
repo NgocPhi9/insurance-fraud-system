@@ -1,0 +1,229 @@
+/* ── Variables ─────────────────────────────────────── */
+:root {
+--sidebar-width: 250px;
+--sidebar-collapsed-width: 68px;
+--navbar-height: 56px;
+--transition: 0.25s ease;
+}
+
+/* ── Layout ─────────────────────────────────────────── */
+.wrapper {
+min-height: 100vh;
+}
+
+.main-content {
+min-height: 100vh;
+margin-left: var(--sidebar-width);
+transition: margin-left var(--transition);
+}
+
+/* ── Sidebar ────────────────────────────────────────── */
+.sidebar {
+width: var(--sidebar-width);
+min-height: 100vh;
+background: #fff;
+border-right: 1px solid #dee2e6;
+position: fixed;
+top: 0;
+left: 0;
+bottom: 0;
+z-index: 1000;
+transition: width var(--transition);
+overflow: hidden;
+will-change: width;
+}
+
+/* Collapsed state */
+.sidebar.collapsed {
+width: var(--sidebar-collapsed-width);
+}
+
+.sidebar-label {
+    opacity: 1;
+    max-width: 180px;
+    overflow: hidden;
+    transition: opacity var(--transition), max-width var(--transition);
+}
+
+.sidebar.collapsed .sidebar-label {
+    opacity: 0;
+    max-width: 0;
+    margin: 0 !important;
+    pointer-events: none;
+}
+
+.sidebar.collapsed .sidebar-brand {
+justify-content: center !important;
+}
+
+.sidebar.collapsed + .sidebar-overlay + .main-content,
+.main-content.collapsed {
+margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Căn giữa icon khi collapsed */
+.sidebar.collapsed .nav-link {
+    justify-content: center;
+    gap: 0 !important;
+    padding: 0.5rem 0;
+}
+
+.sidebar.collapsed .nav-link .nav-icon {
+    width: 20px;
+    margin: 0;
+}
+
+/* Nav links */
+.sidebar .nav-link {
+    color: #495057;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    transition: background var(--transition), color var(--transition), padding var(--transition);
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.sidebar .nav-icon {
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #f0f4ff;
+    color: #0d6efd;
+    box-shadow: none;
+}
+
+.sidebar .nav-link:focus,
+.sidebar .nav-link:focus-visible {
+    box-shadow: none;
+    outline: none;
+}
+
+.sidebar .nav-link.active {
+    background-color: #e7f0ff;
+    color: #0d6efd;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.sidebar .nav-link.active-group {
+    color: #0d6efd;
+    font-weight: 600;
+}
+
+/* Chevron rotate khi mở */
+.nav-link:not(.collapsed) .chevron-icon {
+    transform: rotate(180deg);
+}
+
+.chevron-icon {
+    transition: transform var(--transition);
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Avatar */
+.avatar-circle {
+width: 36px;
+height: 36px;
+font-size: 1rem;
+flex-shrink: 0;
+}
+
+/* ── Toggle btn ─────────────────────────────────────── */
+#sidebarToggleBtn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    background: transparent;
+    border: none;
+    color: #495057;
+    flex-shrink: 0;
+}
+
+#sidebarToggleBtn:focus,
+#sidebarToggleBtn:focus-visible {
+    box-shadow: none;
+    outline: none;
+}
+
+#sidebarToggleBtn:hover {
+    background-color: #f0f4ff !important;
+    color: #0d6efd;
+}
+
+/* ── Navbar (top) ───────────────────────────────────── */
+.top-navbar {
+height: var(--navbar-height);
+position: sticky;
+top: 0;
+z-index: 999;
+box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+/* ── Sidebar overlay (mobile) ───────────────────────── */
+.sidebar-overlay {
+position: fixed;
+inset: 0;
+background: rgba(0,0,0,0.4);
+z-index: 999;
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+.footer {
+margin-top: auto;
+}
+
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 767.98px) {
+.sidebar {
+left: calc(-1 * var(--sidebar-width));
+}
+
+.sidebar.mobile-open {
+left: 0;
+}
+
+.main-content {
+margin-left: 0 !important;
+}
+
+#sidebarOverlay.d-none {
+display: none !important;
+}
+}
+
+/* ── Sidebar brand layout ───────────────────────────── */
+.sidebar-brand {
+    flex-direction: row-reverse;
+}
+
+.sidebar.collapsed .sidebar-brand {
+    flex-direction: row;
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* ── Submenu ────────────────────────────────────────── */
+.sidebar.collapsed .sidebar-submenu {
+    height: 0 !important;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+/* Bỏ pointer-events: none — cho click bình thường */
+.sidebar.collapsed [data-bs-toggle="collapse"] {
+    pointer-events: auto;
+    cursor: pointer;
+}

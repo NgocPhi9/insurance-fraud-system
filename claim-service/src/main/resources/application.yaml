@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: insurancefraud
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+    show-sql: false
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+
+#logging:
+#  level:
+#    org.springframework.security: DEBUG
+#    org.springframework.beans.factory: DEBUG
+
+app:
+  investigation:
+    max-claims-per-investigator: 3
+    page-size: 10

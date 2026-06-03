@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<nav th:fragment="sidebar" id="sidebar" class="sidebar d-flex flex-column">
+
+    <!-- Logo / Brand -->
+    <div class="sidebar-brand d-flex align-items-center justify-content-between px-3 py-3">
+        <button id="sidebarToggleBtn" class="sidebar-toggle-btn" title="Thu gọn sidebar">
+            <i class="bi bi-layout-sidebar-reverse fs-5 sidebar-open-icon"></i>
+            <i class="bi bi-layout-sidebar fs-5 sidebar-closed-icon d-none"></i>
+        </button>
+        <a th:href="@{/dashboard}"
+           class="d-flex align-items-center text-decoration-none ms-2 sidebar-label">
+            <i class="bi bi-shield-check fs-5 text-primary me-2"></i>
+            <span class="fw-bold text-dark">FraudDetect</span>
+        </a>
+    </div>
+
+    <hr class="my-0">
+
+    <ul class="nav flex-column px-2 py-3 flex-grow-1">
+
+        <!-- Dashboard — tất cả role -->
+        <li class="nav-item">
+            <a th:href="@{/dashboard}"
+               th:classappend="${activePage == 'dashboard'} ? 'active' : ''"
+               class="nav-link d-flex align-items-center gap-2 rounded"
+               title="Dashboard">
+                <i class="bi bi-speedometer2 fs-5 nav-icon"></i>
+                <span class="sidebar-label">Dashboard</span>
+            </a>
+        </li>
+
+        <!-- Claims — tất cả role nhưng mục con khác nhau -->
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 rounded collapsed"
+               data-bs-toggle="collapse"
+               href="#claimsMenu"
+               role="button"
+               title="Claims"
+               th:classappend="${activeGroup == 'claims'} ? 'active-group' : ''">
+                <i class="bi bi-file-earmark-medical fs-5 nav-icon"></i>
+                <span class="sidebar-label flex-grow-1">Claims</span>
+                <i class="bi bi-chevron-down sidebar-label chevron-icon small"></i>
+            </a>
+            <div class="collapse sidebar-submenu" id="claimsMenu"
+                 th:classappend="${activeGroup == 'claims'} ? 'show' : ''">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <!-- Danh sách — tất cả role -->
+                    <li class="nav-item">
+                        <a th:href="@{/claims}"
+                           th:classappend="${activePage == 'claims-list'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-list-ul small"></i>
+                            <span>Danh sách</span>
+                        </a>
+                    </li>
+                    <!-- Tạo mới — chỉ STAFF và ADMIN -->
+                    <li class="nav-item"
+                        sec:authorize="hasAnyRole('STAFF')">
+                        <a th:href="@{/claims/create}"
+                           th:classappend="${activePage == 'claims-create'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-plus-circle small"></i>
+                            <span>Tạo mới</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Phân tích ML — chỉ INVESTIGATOR và ADMIN -->
+        <li class="nav-item" sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')">
+            <a class="nav-link d-flex align-items-center gap-2 rounded collapsed"
+               data-bs-toggle="collapse"
+               href="#predictionsMenu"
+               role="button"
+               title="Phân tích ML"
+               th:classappend="${activeGroup == 'predictions'} ? 'active-group' : ''">
+                <i class="bi bi-cpu fs-5 nav-icon"></i>
+                <span class="sidebar-label flex-grow-1">Phân tích ML</span>
+                <i class="bi bi-chevron-down sidebar-label chevron-icon small"></i>
+            </a>
+            <div class="collapse sidebar-submenu" id="predictionsMenu"
+                 th:classappend="${activeGroup == 'predictions'} ? 'show' : ''">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a th:href="@{/predictions}"
+                           th:classappend="${activePage == 'predictions-list'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-bar-chart-line small"></i>
+                            <span>Kết quả</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a th:href="@{/predictions/alerts}"
+                           th:classappend="${activePage == 'predictions-alerts'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-exclamation-triangle small"></i>
+                            <span>Cảnh báo</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Investigation — chỉ INVESTIGATOR -->
+        <li class="nav-item" sec:authorize="hasRole('INVESTIGATOR')">
+            <a th:href="@{/investigation}"
+               th:classappend="${activePage == 'investigation'} ? 'active' : ''"
+               class="nav-link d-flex align-items-center gap-2 rounded"
+               title="Điều tra">
+                <i class="bi bi-search fs-5 nav-icon"></i>
+                <span class="sidebar-label">Điều tra</span>
+            </a>
+        </li>
+
+        <!-- Users — chỉ ADMIN -->
+        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/users}"
+               th:classappend="${activePage == 'users'} ? 'active' : ''"
+               class="nav-link d-flex align-items-center gap-2 rounded"
+               title="Người dùng">
+                <i class="bi bi-people fs-5 nav-icon"></i>
+                <span class="sidebar-label">Người dùng</span>
+            </a>
+        </li>
+
+        <!-- Reports — chỉ ADMIN -->
+        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/reports}"
+               th:classappend="${activePage == 'reports'} ? 'active' : ''"
+               class="nav-link d-flex align-items-center gap-2 rounded"
+               title="Báo cáo">
+                <i class="bi bi-file-earmark-bar-graph fs-5 nav-icon"></i>
+                <span class="sidebar-label">Báo cáo</span>
+            </a>
+        </li>
+
+    </ul>
+
+    <!-- Bottom: User info -->
+    <div class="sidebar-footer px-3 py-3 border-top">
+        <div class="d-flex align-items-center gap-2">
+            <div class="avatar-circle bg-primary text-white d-flex align-items-center
+                        justify-content: center rounded-circle flex-shrink-0">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <div class="sidebar-label overflow-hidden">
+                <div class="fw-semibold text-truncate small"
+                     th:text="${#authentication?.name} ?: 'Admin'">Admin</div>
+                <div class="text-muted" style="font-size: 0.75rem;"
+                     th:text="${userRole} ?: 'ROLE'">ROLE</div>
+            </div>
+        </div>
+    </div>
+
+</nav>
+</body>
+</html>

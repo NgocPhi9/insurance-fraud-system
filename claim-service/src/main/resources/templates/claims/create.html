@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Tạo Claim Mới')}"></head>
+<link rel="stylesheet" th:href="@{/css/claim-create.css}">
+<body class="bg-light">
+<div class="wrapper d-flex">
+    <div th:replace="~{layout/sidebar :: sidebar}"></div>
+    <div id="sidebarOverlay" class="sidebar-overlay d-none"></div>
+    <div class="main-content d-flex flex-column flex-grow-1">
+        <div th:replace="~{layout/navbar :: navbar}"></div>
+
+        <main class="flex-grow-1 p-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold mb-0">Tạo Claim Mới</h5>
+                </div>
+                <a th:href="@{/claims}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Quay lại
+                </a>
+            </div>
+
+            <div id="formAlert" class="alert d-none mb-3" role="alert"></div>
+
+            <form id="createClaimForm" novalidate>
+                <div class="row g-4">
+
+                    <!-- ═══ CỘT TRÁI ═══ -->
+                    <div class="col-lg-8">
+
+                        <!-- 1. Thông tin cơ bản -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                                    Thông tin cơ bản
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Mã hồ sơ người thụ hưởng
+                                        </label>
+                                        <input type="text" class="form-control" id="desynpufId"
+                                               placeholder="VD: 00998CA1A65B3C3B">
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Mã claim <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="clmId"
+                                               placeholder="VD: CLM2024001" required>
+                                        <div class="invalid-feedback">Vui lòng nhập mã claim.</div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">Phân đoạn claim</label>
+                                        <input type="text" class="form-control" id="segment"
+                                               placeholder="VD: 1">
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Mã cơ sở cung cấp dịch vụ <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="prvdrNum"
+                                               placeholder="VD: 0114401561" required>
+                                        <div class="invalid-feedback">Vui lòng nhập mã cơ sở.</div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Ngày bắt đầu claim <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="date" class="form-control" id="clmFromDt" required>
+                                        <div class="invalid-feedback">Vui lòng chọn ngày bắt đầu.</div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Ngày kết thúc claim <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="date" class="form-control" id="clmThruDt" required>
+                                        <div class="invalid-feedback">Ngày kết thúc phải sau ngày bắt đầu.</div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">Ngày nhập viện</label>
+                                        <input type="date" class="form-control" id="clmAdmsnDt">
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">Ngày xuất viện</label>
+                                        <input type="date" class="form-control" id="nchBeneDschrgDt">
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Số ngày sử dụng dịch vụ <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" class="form-control" id="clmUtlztnDayCnt"
+                                               min="0" placeholder="VD: 5" required>
+                                        <div class="invalid-feedback">Vui lòng nhập số ngày.</div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Mã nhóm chẩn đoán (DRG) <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="clmDrgCd"
+                                               placeholder="VD: 470" required>
+                                        <div class="invalid-feedback">Vui lòng nhập mã DRG.</div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Mã chẩn đoán nhập viện (ICD-9) <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="admtngIcd9DgnsCd"
+                                               placeholder="VD: 41401" required>
+                                        <div class="invalid-feedback">Vui lòng nhập mã chẩn đoán nhập viện.</div>
+                                        <div class="form-text">Mã ICD-9 tại thời điểm nhập viện</div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Thông tin tài chính -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="bi bi-cash-stack me-2 text-success"></i>
+                                    Thông tin tài chính
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Số tiền thanh toán claim <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="clmPmtAmt"
+                                                   step="0.01" min="0" placeholder="VD: 8500.00" required>
+                                        </div>
+                                        <div class="invalid-feedback">Vui lòng nhập số tiền.</div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Số tiền bảo hiểm gốc chi trả <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="nchPrmryPyrClmPdAmt"
+                                                   step="0.01" min="0" placeholder="VD: 0.00" required>
+                                        </div>
+                                        <div class="invalid-feedback">Vui lòng nhập số tiền.</div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">Khoản khấu trừ nội trú</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="nchBeneIpDdctblAmt"
+                                                   step="0.01" min="0" placeholder="VD: 1068.00">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">Khoản đồng chi trả Part A</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="nchBenePtaCoinsrncLbltyAm"
+                                                   step="0.01" min="0" placeholder="VD: 325.00">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">Khoản khấu trừ máu</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="nchBeneBloodDdctblLbltyAm"
+                                                   step="0.01" min="0" placeholder="VD: 0.00">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">Chi phí mỗi ngày điều trị</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="clmPassThruPerDiemAmt"
+                                                   step="0.01" min="0" placeholder="VD: 1250.00">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Bác sĩ -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="bi bi-person-badge me-2 text-info"></i>
+                                    Thông tin bác sĩ
+
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-sm-4">
+                                        <label class="form-label small fw-semibold">
+                                            Bác sĩ điều trị chính (NPI) <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="atPhysnNpi"
+                                               placeholder="VD: 1740834033" required>
+                                        <div class="invalid-feedback">Bắt buộc nhập.</div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <label class="form-label small fw-semibold">
+                                            Bác sĩ phẫu thuật (NPI) <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="opPhysnNpi"
+                                               placeholder="VD: 1649326637" required>
+                                        <div class="invalid-feedback">Bắt buộc nhập.</div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <label class="form-label small fw-semibold">
+                                            Bác sĩ khác (NPI) <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="otPhysnNpi"
+                                               placeholder="VD: 1346238502" required>
+                                        <div class="invalid-feedback">Bắt buộc nhập.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Chẩn đoán & Thủ thuật -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="bi bi-clipboard2-pulse me-2 text-warning"></i>
+                                    Chẩn đoán &amp; Thủ thuật
+                                </h6>
+                            </div>
+                            <div class="card-body">
+
+                                <!-- Diagnoses: ICD9_DGNS_CD_1..10 -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label small fw-semibold mb-0">
+                                            Mã chẩn đoán ICD-9
+                                            <span class="text-muted fw-normal" id="diagnosisCount">(0/10)</span>
+                                        </label>
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                onclick="addRow('diagnosis')" id="addDiagnosisBtn">
+                                            <i class="bi bi-plus-lg me-1"></i>Thêm dòng
+                                        </button>
+                                    </div>
+                                    <div id="diagnosisRows"></div>
+                                </div>
+
+                                <!-- Procedures: ICD9_PRCDR_CD_1..6 -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label small fw-semibold mb-0">
+                                            Mã thủ thuật ICD-9
+                                            <span class="text-muted fw-normal" id="procedureCount">(0/6)</span>
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                onclick="addRow('procedure')" id="addProcedureBtn">
+                                            <i class="bi bi-plus-lg me-1"></i>Thêm dòng
+                                        </button>
+                                    </div>
+                                    <div id="procedureRows"></div>
+                                </div>
+
+                                <!-- HCPCS: HCPCS_CD_1..45 -->
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label small fw-semibold mb-0">
+                                            Mã dịch vụ y tế HCPCS
+                                            <span class="text-muted fw-normal" id="hcpcsCount">(0/45)</span>
+                                        </label>
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                onclick="addRow('hcpcs')" id="addHcpcsBtn">
+                                            <i class="bi bi-plus-lg me-1"></i>Thêm dòng
+                                        </button>
+                                    </div>
+                                    <div id="hcpcsRows"></div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div><!-- /col-lg-8 -->
+
+                    <!-- ═══ CỘT PHẢI ═══ -->
+                    <div class="col-lg-4">
+                        <div class="sticky-top" style="top: 70px;">
+
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-white border-bottom py-3">
+                                    <h6 class="mb-0 fw-semibold">
+                                        <i class="bi bi-send me-2 text-primary"></i>
+                                        Xác nhận &amp; Gửi
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                                            <i class="bi bi-check-circle me-1"></i>Tạo Claim
+                                        </button>
+                                        <a th:href="@{/claims}" class="btn btn-outline-secondary">Hủy</a>
+                                    </div>
+                                    <p class="text-muted small mt-3 mb-0">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Sau khi tạo, ML sẽ tự động phân tích và trả kết quả trong vài giây.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm"
+                                 sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')">
+                                <div class="card-header bg-white border-bottom py-3">
+                                    <h6 class="mb-0 fw-semibold">
+                                        <i class="bi bi-people me-2 text-secondary"></i>
+                                        Phân công
+                                        <span class="badge bg-light text-muted border ms-1"
+                                              style="font-size:.7rem">Tuỳ chọn</span>
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small mb-3">
+                                        Để trống nếu chưa phân công. Investigator có thể tự nhận sau.
+                                    </p>
+                                    <div>
+                                        <label class="form-label small fw-semibold">ID điều tra viên</label>
+                                        <input type="number" class="form-control" id="investigatorId"
+                                               placeholder="User ID của điều tra viên">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+
+        </main>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+<script th:src="@{/js/claim-create.js}"></script>
+</body>
+</html>

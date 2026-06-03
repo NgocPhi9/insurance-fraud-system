@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Dashboard')}"></head>
+<body class="bg-light">
+<div class="wrapper d-flex">
+    <div th:replace="~{layout/sidebar :: sidebar}"></div>
+    <div id="sidebarOverlay" class="sidebar-overlay d-none"></div>
+    <div class="main-content d-flex flex-column flex-grow-1">
+        <div th:replace="~{layout/navbar :: navbar}"></div>
+        <main class="flex-grow-1 p-4">
+            <h5 class="fw-bold">Dashboard</h5>
+            <p class="text-muted">Đang phát triển...</p>
+        </main>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+</div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

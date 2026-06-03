@@ -1,0 +1,22 @@
+/* claim-create.css */
+
+/* Row trong danh sách mã chẩn đoán / thủ thuật / HCPCS */
+.code-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+/* Tắt viền xanh khi valid — chỉ hiện đỏ khi invalid */
+.was-validated .form-control:valid,
+.was-validated .form-select:valid,
+.form-control.is-valid,
+.form-select.is-valid {
+    border-color: #dee2e6 !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+.was-validated .input-group .form-control:valid {
+    z-index: 0;
+}

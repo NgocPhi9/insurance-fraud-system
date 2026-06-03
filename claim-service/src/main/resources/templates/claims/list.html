@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Danh sách Claims')}"></head>
+<body class="bg-light">
+<div class="wrapper d-flex">
+  <div th:replace="~{layout/sidebar :: sidebar}"></div>
+  <div id="sidebarOverlay" class="sidebar-overlay d-none"></div>
+  <div class="main-content d-flex flex-column flex-grow-1">
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <main class="flex-grow-1 p-4">
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h5 class="fw-bold mb-0">Danh sách Claims</h5>
+          <span class="text-muted small">Tổng:
+            <strong th:text="${claimsPage.totalElements}">0</strong> claims
+            &nbsp;·&nbsp; Trang
+            <strong th:text="${claimsPage.number + 1}">1</strong> /
+            <strong th:text="${claimsPage.totalPages}">1</strong>
+          </span>
+        </div>
+        <a th:href="@{/claims/create}"
+           sec:authorize="hasAnyRole('STAFF','ADMIN')"
+           class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-circle me-1"></i>Tạo mới
+        </a>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+              <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+                <input type="text" id="searchInput"
+                       class="form-control border-start-0"
+                       placeholder="Tìm theo Claim ID, Provider...">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select id="statusFilter" class="form-select form-select-sm">
+                <option value="">Tất cả trạng thái</option>
+                <option value="PENDING">Pending</option>
+                <option value="FLAGGED">Flagged</option>
+                <option value="UNDER_REVIEW">Under Review</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+            </div>
+            <div class="col-md-auto ms-auto">
+              <button class="btn btn-sm btn-outline-secondary" onclick="resetFilter()">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="claimsTable">
+              <thead class="table-light">
+              <tr>
+                <th class="ps-3">Claim ID</th>
+                <th>Provider</th>
+                <th>Từ ngày</th>
+                <th>Đến ngày</th>
+                <th>Số tiền</th>
+                <th class="text-center">Trạng thái</th>
+                <th sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')"
+                    class="text-center">Risk Score</th>
+                <th sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')"
+                    class="text-center">Phân công</th>
+                <th class="text-center pe-3">Thao tác</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="claim : ${claims}" class="claim-row"
+                  th:attr="data-status=${claim.claimStatus},
+                 data-search=${claim.clmId + ' ' + claim.prvdrNum}">
+
+                <td class="ps-3">
+                    <span class="fw-semibold text-primary"
+                          th:text="${claim.clmId} ?: '#' + ${claim.rawClaimId}"></span>
+                </td>
+                <td th:text="${claim.prvdrNum} ?: '—'"></td>
+                <td th:text="${claim.clmFromDt} ?: '—'"></td>
+                <td th:text="${claim.clmThruDt} ?: '—'"></td>
+                <td>
+                    <span th:if="${claim.clmPmtAmt != null}"
+                          th:text="'$' + ${#numbers.formatDecimal(claim.clmPmtAmt, 1, 'COMMA', 2, 'POINT')}">
+                    </span>
+                  <span th:unless="${claim.clmPmtAmt != null}">—</span>
+                </td>
+
+                <!-- Trạng thái -->
+                <td class="text-center">
+                    <span th:switch="${claim.claimStatus?.name()}">
+                        <span th:case="'PENDING'"
+                              class="badge bg-secondary">Pending</span>
+                        <span th:case="'FLAGGED'"
+                              class="badge bg-warning text-dark">Flagged</span>
+                        <span th:case="'UNDER_REVIEW'"
+                              class="badge bg-info text-dark">Under Review</span>
+                        <span th:case="'APPROVED'"
+                              class="badge bg-success">Approved</span>
+                        <span th:case="'REJECTED'"
+                              class="badge bg-danger">Rejected</span>
+                    </span>
+                </td>
+
+                <!-- Risk Score — chỉ INVESTIGATOR/ADMIN -->
+                <td sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')"
+                    class="text-center"
+                    th:id="'risk-' + ${claim.rawClaimId}">
+                    <span class="text-muted small fst-italic">
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                    </span>
+                </td>
+
+                <td sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')" class="text-center">
+                  <button sec:authorize="hasRole('INVESTIGATOR')"
+                          th:if="${claim.investigatorId == null
+                    and claim.claimStatus?.name() == 'FLAGGED'}"
+                          class="btn btn-sm btn-outline-primary assign-btn"
+                          th:attr="data-claim-id=${claim.rawClaimId}">Nhận
+                  </button>
+                  <span th:unless="${claim.investigatorId == null
+                       and claim.claimStatus?.name() == 'FLAGGED'}"
+                        class="small"
+                        th:text="${claim.investigatorName} ?: '—'">
+                  </span>
+                </td>
+
+                <!-- Thao tác -->
+                <td class="text-center pe-3">
+                  <a th:href="@{/claims/{id}(id=${claim.rawClaimId})}"
+                     class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </td>
+              </tr>
+
+              <!-- Empty state -->
+              <tr th:if="${claims.isEmpty()}">
+                <td colspan="8" class="text-center py-5 text-muted">
+                  <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                  Chưa có claim nào
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-center mt-3" th:if="${claimsPage.totalPages > 1}">
+        <nav aria-label="Phân trang claims">
+          <ul class="pagination pagination-sm mb-0">
+
+            <!-- Prev -->
+            <li class="page-item" th:classappend="${claimsPage.first} ? 'disabled'">
+              <a class="page-link"
+                 th:href="@{/claims(page=${claimsPage.number - 1})}"
+                 aria-label="Trang trước">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+
+            <!-- Smart page numbers from controller -->
+            <th:block th:each="p : ${pageNumbers}">
+
+              <!-- Ellipsis (null item) -->
+              <li class="page-item disabled" th:if="${p == null}">
+                <span class="page-link px-2">&hellip;</span>
+              </li>
+
+              <!-- Page number -->
+              <li class="page-item"
+                  th:unless="${p == null}"
+                  th:classappend="${p == claimsPage.number} ? 'active'">
+                <a class="page-link"
+                   th:href="@{/claims(page=${p})}"
+                   th:text="${p + 1}">1</a>
+              </li>
+
+            </th:block>
+
+            <!-- Next -->
+            <li class="page-item" th:classappend="${claimsPage.last} ? 'disabled'">
+              <a class="page-link"
+                 th:href="@{/claims(page=${claimsPage.number + 1})}"
+                 aria-label="Trang sau">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+
+          </ul>
+        </nav>
+      </div>
+
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+  </div>
+</div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+<script th:src="@{/js/claim-list.js}"></script>
+</body>
+</html>

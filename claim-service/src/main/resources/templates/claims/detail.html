@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Chi tiết Claim')}"></head>
+<body class="bg-light">
+<div class="wrapper d-flex">
+    <div th:replace="~{layout/sidebar :: sidebar}"></div>
+    <div id="sidebarOverlay" class="sidebar-overlay d-none"></div>
+    <div class="main-content d-flex flex-column flex-grow-1">
+        <div th:replace="~{layout/navbar :: navbar}"></div>
+
+        <main class="flex-grow-1 p-4">
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold mb-0"
+                        th:text="'Chi tiết Claim ' + '#' + ${claim.rawClaimId}">
+                    </h5>
+                </div>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/claims}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Quay lại
+                    </a>
+                    <!-- Chỉ INVESTIGATOR/ADMIN thấy nút predict lại -->
+                    <button sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')"
+                            class="btn btn-sm btn-primary"
+                            id="rePredictBtn"
+                            th:attr="data-claim-id=${claim.rawClaimId}">
+                        <i class="bi bi-cpu me-1"></i>Phân tích lại
+                    </button>
+
+                    <button sec:authorize="hasRole('INVESTIGATOR')"
+                            th:if="${claim.investigatorId == null
+                                and claim.claimStatus?.name() == 'FLAGGED'}"
+                            class="btn btn-sm btn-outline-primary"
+                            id="assignBtn"
+                            th:attr="data-claim-id=${claim.rawClaimId}">
+                        <i class="bi bi-hand-index me-1"></i>Nhận điều tra
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- ── Cột trái: Thông tin claim ── -->
+                <div th:with="colWidth=${#authorization.expression('hasAnyRole(''INVESTIGATOR'',''ADMIN'')')} ? 'col-lg-7' : 'col-12'"
+                     th:class="${colWidth}">
+
+                    <!-- Trạng thái -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body d-flex align-items-center gap-3">
+                            <div>
+                                <div class="text-muted small mb-1">Trạng thái</div>
+                                <span th:switch="${claim.claimStatus?.name()}">
+                                    <span th:case="'PENDING'"
+                                          class="badge bg-secondary">Pending</span>
+                                    <span th:case="'FLAGGED'"
+                                          class="badge bg-warning text-dark">Flagged</span>
+                                    <span th:case="'UNDER_REVIEW'"
+                                          class="badge bg-info text-dark">Under Review</span>
+                                    <span th:case="'APPROVED'"
+                                          class="badge bg-success">Approved</span>
+                                    <span th:case="'REJECTED'"
+                                          class="badge bg-danger">Rejected</span>
+                                </span>
+                            </div>
+                            <div class="ms-auto text-end">
+                                <div class="text-muted small mb-1">Claim ID</div>
+                                <strong th:text="${claim.clmId} ?: '—'"></strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin cơ bản -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                                Thông tin cơ bản
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Beneficiary ID</div>
+                                    <div th:text="${claim.desynpufId} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Provider</div>
+                                    <div th:text="${claim.prvdrNum} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Từ ngày</div>
+                                    <div th:text="${claim.clmFromDt} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Đến ngày</div>
+                                    <div th:text="${claim.clmThruDt} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Ngày nhập viện</div>
+                                    <div th:text="${claim.clmAdmsnDt} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Ngày xuất viện</div>
+                                    <div th:text="${claim.nchBeneDschrgDt} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Số ngày điều trị</div>
+                                    <div th:text="${claim.clmUtlztnDayCnt} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">DRG Code</div>
+                                    <div th:text="${claim.clmDrgCd} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Chẩn đoán nhập viện</div>
+                                    <div th:text="${claim.admtngIcd9DgnsCd} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Segment</div>
+                                    <div th:text="${claim.segment} ?: '—'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin tài chính -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-cash-stack me-2 text-success"></i>
+                                Thông tin tài chính
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Số tiền thanh toán</div>
+                                    <div class="fw-semibold"
+                                         th:text="${claim.clmPmtAmt != null} ? '$' + ${#numbers.formatDecimal(claim.clmPmtAmt,1,'COMMA',2,'POINT')} : '—'">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Primary Payer Amount</div>
+                                    <div th:text="${claim.nchPrmryPyrClmPdAmt != null} ? '$' + ${#numbers.formatDecimal(claim.nchPrmryPyrClmPdAmt,1,'COMMA',2,'POINT')} : '—'">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">IP Deductible</div>
+                                    <div th:text="${claim.nchBeneIpDdctblAmt != null} ? '$' + ${#numbers.formatDecimal(claim.nchBeneIpDdctblAmt,1,'COMMA',2,'POINT')} : '—'">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Coinsurance</div>
+                                    <div th:text="${claim.nchBenePtaCoinsrncLbltyAm != null} ? '$' + ${#numbers.formatDecimal(claim.nchBenePtaCoinsrncLbltyAm,1,'COMMA',2,'POINT')} : '—'">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Blood Deductible</div>
+                                    <div th:text="${claim.nchBeneBloodDdctblLbltyAm != null} ? '$' + ${#numbers.formatDecimal(claim.nchBeneBloodDdctblLbltyAm,1,'COMMA',2,'POINT')} : '—'">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small">Per Diem</div>
+                                    <div th:text="${claim.clmPassThruPerDiemAmt != null} ? '$' + ${#numbers.formatDecimal(claim.clmPassThruPerDiemAmt,1,'COMMA',2,'POINT')} : '—'">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Physicians -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-person-badge me-2 text-info"></i>
+                                Thông tin bác sĩ
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-sm-4">
+                                    <div class="text-muted small">Attending Physician</div>
+                                    <div th:text="${claim.atPhysnNpi} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="text-muted small">Operating Physician</div>
+                                    <div th:text="${claim.opPhysnNpi} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="text-muted small">Other Physician</div>
+                                    <div th:text="${claim.otPhysnNpi} ?: '—'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Diagnoses / Procedures / HCPCS -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-clipboard2-pulse me-2 text-warning"></i>
+                                Chẩn đoán & Thủ thuật
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="text-muted small mb-1">Chẩn đoán (ICD-9)</div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span th:each="d : ${claim.diagnoses}"
+                                          class="badge bg-light text-dark border"
+                                          th:text="${d}"></span>
+                                    <span th:if="${claim.diagnoses.isEmpty()}"
+                                          class="text-muted">—</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="text-muted small mb-1">Thủ thuật (ICD-9)</div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span th:each="p : ${claim.procedures}"
+                                          class="badge bg-light text-dark border"
+                                          th:text="${p}"></span>
+                                    <span th:if="${claim.procedures.isEmpty()}"
+                                          class="text-muted">—</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-muted small mb-1">HCPCS Codes</div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span th:each="h : ${claim.hcpcsCodes}"
+                                          class="badge bg-light text-dark border"
+                                          th:text="${h}"></span>
+                                    <span th:if="${claim.hcpcsCodes.isEmpty()}"
+                                          class="text-muted">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ── Cột phải: ML Analysis (chỉ INVESTIGATOR/ADMIN) ── -->
+                <div sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')" class="col-lg-5">
+                    <div class="sticky-top" style="top: 70px;">
+
+                    <!-- ML Result Card -->
+                    <div class="card border-0 shadow-sm" id="mlCard">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-cpu me-2 text-primary"></i>
+                                Phân tích ML
+                            </h6>
+                        </div>
+                        <div class="card-body">
+
+                            <!-- Trạng thái: đang chờ -->
+                            <div id="mlPending" class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm text-primary mb-2"
+                                     role="status"></div>
+                                <div class="text-muted small">Đang phân tích...</div>
+                                <div class="text-muted" style="font-size:0.75rem;">
+                                    Kết quả sẽ có trong giây lát
+                                </div>
+                            </div>
+
+                            <!-- Trạng thái: có kết quả -->
+                            <div id="mlResult" class="d-none">
+
+                                <!-- Label + Risk -->
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div id="mlLabel" class="badge fs-6 px-3 py-2"></div>
+                                    <div class="ms-auto text-end">
+                                        <div class="text-muted small">Risk Score</div>
+                                        <div class="fw-bold fs-5" id="mlRisk"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Progress bar risk -->
+                                <div class="mb-3">
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" id="mlProgressBar"
+                                             role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Alert nếu shouldAlert -->
+                                <div id="mlAlert"
+                                     class="alert alert-danger d-none d-flex align-items-center gap-2 py-2 mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    <span>Claim này cần được xem xét ngay!</span>
+                                </div>
+
+                                <!-- Anomaly score + method -->
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <div class="bg-light rounded p-2 text-center">
+                                            <div class="text-muted small">Anomaly Score</div>
+                                            <div class="fw-semibold" id="mlAnomalyScore"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="bg-light rounded p-2 text-center">
+                                            <div class="text-muted small">Phương pháp</div>
+                                            <div class="fw-semibold" id="mlMethod"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SHAP Factors -->
+                                <div id="shapSection">
+                                    <div class="text-muted small fw-semibold mb-2">
+                                        Yếu tố ảnh hưởng chính
+                                    </div>
+                                    <div id="shapFactors"></div>
+                                </div>
+
+                                <!-- Predicted at -->
+                                <div class="text-muted mt-3 text-end"
+                                     style="font-size: 0.75rem;">
+                                    Phân tích lúc: <span id="mlPredictedAt"></span>
+                                </div>
+                            </div>
+
+                            <!-- Trạng thái: lỗi -->
+                            <div id="mlError" class="d-none text-center py-4">
+                                <i class="bi bi-exclamation-circle text-danger fs-3 d-block mb-2"></i>
+                                <div class="text-muted small">Không thể lấy kết quả phân tích</div>
+                                <button class="btn btn-sm btn-outline-primary mt-2"
+                                        onclick="retryPrediction(this)">
+                                    Thử lại
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Handler / Investigator -->
+                    <div class="card border-0 shadow-sm mt-4">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-people me-2 text-secondary"></i>
+                                Phân công
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <div class="text-muted small mb-1">Claim Handler</div>
+                                    <div th:text="${claim.claimHandlerName} ?: '—'"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted small mb-1">Investigator</div>
+                                    <!-- Chưa có investigator -->
+                                    <div th:if="${claim.investigatorId == null}">
+                                        <span class="text-muted fst-italic small">Chưa phân công</span>
+                                    </div>
+                                    <!-- Đã có investigator -->
+                                    <div th:unless="${claim.investigatorId == null}"
+                                         class="d-flex align-items-center gap-2">
+                                        <span th:text="${claim.investigatorName}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lịch sử điều tra -->
+                    <div class="card border-0 shadow-sm mt-4"
+                         sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-clock-history me-2 text-secondary"></i>
+                                Lịch sử điều tra
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="investigationHistory">
+                                <div class="text-center py-3 text-muted small">
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                    Đang tải...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons — chỉ INVESTIGATOR + claim UNDER_REVIEW -->
+                    <div class="card border-0 shadow-sm mt-4"
+                         sec:authorize="hasRole('INVESTIGATOR')"
+                         th:if="${claim.claimStatus?.name() == 'UNDER_REVIEW'
+                            and claim.investigatorId != null
+                            and claim.investigatorId == #authentication.principal.userId}">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-clipboard-check me-2 text-primary"></i>
+                                Quyết định
+                            </h6>
+                        </div>
+                        <div class="card-body">
+
+                            <!-- Ghi chú -->
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Ghi chú điều tra</label>
+                                <textarea class="form-control" id="investigationNote"
+                                          rows="3" placeholder="Nhập ghi chú"></textarea>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-success" id="approveBtn">
+                                    <i class="bi bi-check-circle me-1"></i>Duyệt hợp lệ
+                                </button>
+                                <button class="btn btn-outline-danger" id="rejectBtn">
+                                    <i class="bi bi-x-circle me-1"></i>Từ chối (Gian lận)
+                                </button>
+                                <button class="btn btn-outline-secondary" id="addNoteBtn">
+                                    <i class="bi bi-sticky me-1"></i>Lưu ghi chú
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </main>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+</div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+<!-- Inject claimId cho JS -->
+<script th:inline="javascript">
+    window.CLAIM_ID = [[${claim.rawClaimId}]];
+</script>
+<script th:src="@{/js/claim-detail.js}"></script>
+</body>
+</html>
