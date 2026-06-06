@@ -56,9 +56,9 @@
                                     <span th:case="'PENDING'"
                                           class="badge bg-secondary">Pending</span>
                                     <span th:case="'FLAGGED'"
-                                          class="badge bg-warning text-dark">Flagged</span>
+                                          class="badge bg-warning">Flagged</span>
                                     <span th:case="'UNDER_REVIEW'"
-                                          class="badge bg-info text-dark">Under Review</span>
+                                          class="badge bg-info">Under Review</span>
                                     <span th:case="'APPROVED'"
                                           class="badge bg-success">Approved</span>
                                     <span th:case="'REJECTED'"
@@ -83,11 +83,11 @@
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-sm-6">
-                                    <div class="text-muted small">Beneficiary ID</div>
+                                    <div class="text-muted small">Mã người thụ hưởng</div>
                                     <div th:text="${claim.desynpufId} ?: '—'"></div>
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="text-muted small">Provider</div>
+                                    <div class="text-muted small">Nhà cung cấp</div>
                                     <div th:text="${claim.prvdrNum} ?: '—'"></div>
                                 </div>
                                 <div class="col-sm-6">
@@ -111,7 +111,7 @@
                                     <div th:text="${claim.clmUtlztnDayCnt} ?: '—'"></div>
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="text-muted small">DRG Code</div>
+                                    <div class="text-muted small">Mã DRG</div>
                                     <div th:text="${claim.clmDrgCd} ?: '—'"></div>
                                 </div>
                                 <div class="col-sm-6">
@@ -119,7 +119,7 @@
                                     <div th:text="${claim.admtngIcd9DgnsCd} ?: '—'"></div>
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="text-muted small">Segment</div>
+                                    <div class="text-muted small">Phân nhóm (Segment)</div>
                                     <div th:text="${claim.segment} ?: '—'"></div>
                                 </div>
                             </div>
@@ -143,27 +143,27 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="text-muted small">Primary Payer Amount</div>
+                                    <div class="text-muted small">Bảo hiểm chính chi trả</div>
                                     <div th:text="${claim.nchPrmryPyrClmPdAmt != null} ? '$' + ${#numbers.formatDecimal(claim.nchPrmryPyrClmPdAmt,1,'COMMA',2,'POINT')} : '—'">
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="text-muted small">IP Deductible</div>
+                                    <div class="text-muted small">Khấu trừ nội trú</div>
                                     <div th:text="${claim.nchBeneIpDdctblAmt != null} ? '$' + ${#numbers.formatDecimal(claim.nchBeneIpDdctblAmt,1,'COMMA',2,'POINT')} : '—'">
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="text-muted small">Coinsurance</div>
+                                    <div class="text-muted small">Đồng bảo hiểm</div>
                                     <div th:text="${claim.nchBenePtaCoinsrncLbltyAm != null} ? '$' + ${#numbers.formatDecimal(claim.nchBenePtaCoinsrncLbltyAm,1,'COMMA',2,'POINT')} : '—'">
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="text-muted small">Blood Deductible</div>
+                                    <div class="text-muted small">Khấu trừ máu</div>
                                     <div th:text="${claim.nchBeneBloodDdctblLbltyAm != null} ? '$' + ${#numbers.formatDecimal(claim.nchBeneBloodDdctblLbltyAm,1,'COMMA',2,'POINT')} : '—'">
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="text-muted small">Per Diem</div>
+                                    <div class="text-muted small">Phí lưu trú hằng ngày</div>
                                     <div th:text="${claim.clmPassThruPerDiemAmt != null} ? '$' + ${#numbers.formatDecimal(claim.clmPassThruPerDiemAmt,1,'COMMA',2,'POINT')} : '—'">
                                     </div>
                                 </div>
@@ -182,15 +182,15 @@
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-sm-4">
-                                    <div class="text-muted small">Attending Physician</div>
+                                    <div class="text-muted small">Bác sĩ điều trị chính</div>
                                     <div th:text="${claim.atPhysnNpi} ?: '—'"></div>
                                 </div>
                                 <div class="col-sm-4">
-                                    <div class="text-muted small">Operating Physician</div>
+                                    <div class="text-muted small">Bác sĩ phẫu thuật</div>
                                     <div th:text="${claim.opPhysnNpi} ?: '—'"></div>
                                 </div>
                                 <div class="col-sm-4">
-                                    <div class="text-muted small">Other Physician</div>
+                                    <div class="text-muted small">Bác sĩ khác</div>
                                     <div th:text="${claim.otPhysnNpi} ?: '—'"></div>
                                 </div>
                             </div>
@@ -227,7 +227,7 @@
                                 </div>
                             </div>
                             <div>
-                                <div class="text-muted small mb-1">HCPCS Codes</div>
+                                <div class="text-muted small mb-1">Mã thủ thuật y tế (HCPCS)</div>
                                 <div class="d-flex flex-wrap gap-1">
                                     <span th:each="h : ${claim.hcpcsCodes}"
                                           class="badge bg-light text-dark border"
@@ -347,11 +347,11 @@
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-sm-6">
-                                    <div class="text-muted small mb-1">Claim Handler</div>
+                                    <div class="text-muted small mb-1">Nhân viên tiếp nhận</div>
                                     <div th:text="${claim.claimHandlerName} ?: '—'"></div>
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="text-muted small mb-1">Investigator</div>
+                                    <div class="text-muted small mb-1">Điều tra viên</div>
                                     <!-- Chưa có investigator -->
                                     <div th:if="${claim.investigatorId == null}">
                                         <span class="text-muted fst-italic small">Chưa phân công</span>

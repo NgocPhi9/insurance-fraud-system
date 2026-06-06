@@ -2,6 +2,8 @@ package group102.insurancefraud.service;
 
 import group102.insurancefraud.dto.request.CreateUserRequest;
 import group102.insurancefraud.dto.request.UpdateUserRequest;
+import group102.insurancefraud.dto.request.UpdateProfileRequest;
+import group102.insurancefraud.dto.request.ChangePasswordRequest;
 import group102.insurancefraud.dto.response.UserResponse;
 import group102.insurancefraud.entity.User;
 import group102.insurancefraud.enums.UserRole;
@@ -110,6 +112,34 @@ public class UserService {
         userRepository.save(user);
         log.info("Thay đổi trạng thái: userId={}, status={}", id, newStatus);
         return UserResponse.from(user);
+    }
+
+    @Transactional
+    public UserResponse updateProfile(Long userId, UpdateProfileRequest dto) {
+        User user = findUserOrThrow(userId);
+        user.setPhoneNumber(dto.getPhoneNumber() != null ? dto.getPhoneNumber().trim() : null);
+        userRepository.save(user);
+        log.info("Cập nhật thông tin hồ sơ cá nhân thành công cho user: {}", user.getEmail());
+        return UserResponse.from(user);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest dto) {
+        User user = findUserOrThrow(userId);
+
+        // Kiểm tra mật khẩu cũ
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu hiện tại không chính xác");
+        }
+
+        // Kiểm tra xác nhận mật khẩu mới
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Mật khẩu mới và xác nhận mật khẩu không khớp");
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
+        log.info("Đổi mật khẩu thành công cho user: {}", user.getEmail());
     }
 
     // ─── Helper ───────────────────────────────────────────────────────────────

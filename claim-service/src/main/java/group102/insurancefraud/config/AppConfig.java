@@ -12,4 +12,5 @@ import org.springframework.context.annotation.Configuration;
 public class AppConfig {
     private int maxClaimsPerInvestigator = 3;
     private int pageSize = 10;
+    private int minFraudClaims = 2;
 }

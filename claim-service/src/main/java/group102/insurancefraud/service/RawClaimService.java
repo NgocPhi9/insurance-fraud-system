@@ -56,12 +56,50 @@ public class RawClaimService {
                 .map(claimMapper::toResponse);
     }
 
+    public Page<ClaimResponse> getClaimsByHandler(Long handlerId, int page) {
+        Pageable pageable = PageRequest.of(
+                page,
+                appConfig.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "rawClaimId")
+        );
+        return rawClaimRepository.findByClaimHandler_UserId(handlerId, pageable)
+                .map(claimMapper::toResponse);
+    }
+
+    public Page<ClaimResponse> getClaimsByInvestigator(Long investigatorId, int page) {
+        Pageable pageable = PageRequest.of(
+                page,
+                appConfig.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "rawClaimId")
+        );
+        return rawClaimRepository.findByInvestigator_UserId(investigatorId, pageable)
+                .map(claimMapper::toResponse);
+    }
+
     public ClaimResponse getClaimById(Long id) {
 
         RawClaim claim = rawClaimRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Claim not found"));
 
         return claimMapper.toResponse(claim);
+    }
+
+    public List<ClaimResponse> getClaimsByUser(Long userId) {
+        // Gộp claims mà user là handler (STAFF) hoặc investigator (INVESTIGATOR)
+        // Dùng LinkedHashMap để dedup theo rawClaimId, giữ thứ tự insert
+        java.util.Map<Long, ClaimResponse> merged = new java.util.LinkedHashMap<>();
+
+        rawClaimRepository.findByClaimHandler_UserId(userId)
+                .stream()
+                .map(claimMapper::toResponse)
+                .forEach(c -> merged.put(c.getRawClaimId(), c));
+
+        rawClaimRepository.findByInvestigator_UserId(userId)
+                .stream()
+                .map(claimMapper::toResponse)
+                .forEach(c -> merged.put(c.getRawClaimId(), c));
+
+        return new java.util.ArrayList<>(merged.values());
     }
 
     public ClaimResponse updateClaim(Long id, CreateClaimRequest request) {
@@ -122,5 +160,19 @@ public class RawClaimService {
         claim.setInvestigator(investigator);
         claim.setClaimStatus(ClaimStatus.UNDER_REVIEW);  // FLAGGED → UNDER_REVIEW
         return claimMapper.toResponse(rawClaimRepository.save(claim));
+    }
+
+    public List<ClaimResponse> getClaimsByBeneficiaryId(String beneficiaryId) {
+        return rawClaimRepository.findByDesynpufIdContainingIgnoreCase(beneficiaryId)
+                .stream()
+                .map(claimMapper::toResponse)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public List<ClaimResponse> getClaimsByProviderId(String providerId) {
+        return rawClaimRepository.findByPrvdrNumContainingIgnoreCase(providerId)
+                .stream()
+                .map(claimMapper::toResponse)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

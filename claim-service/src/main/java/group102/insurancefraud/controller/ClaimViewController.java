@@ -1,31 +1,47 @@
 package group102.insurancefraud.controller;
 
-import group102.insurancefraud.dto.request.CreateClaimRequest;
 import group102.insurancefraud.dto.response.ClaimResponse;
+import group102.insurancefraud.dto.response.UserResponse;
+import group102.insurancefraud.security.CustomUserDetails;
 import group102.insurancefraud.service.RawClaimService;
+import group102.insurancefraud.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.TreeSet;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @Controller
 @RequestMapping("/claims")
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class ClaimViewController extends BaseController {
 
     private final RawClaimService rawClaimService;
+    private final UserService userService;
 
     // Danh sách claims
     @GetMapping
-    public String listClaims(@RequestParam(defaultValue = "0") int page, Model model) {
-        Page<ClaimResponse> claimsPage = rawClaimService.getAllClaims(page);
+    public String listClaims(
+            @RequestParam(defaultValue = "0") int page,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            Model model) {
+
+        Page<ClaimResponse> claimsPage;
+        if ("STAFF".equals(userDetails.getUser().getRole())) {
+            claimsPage = rawClaimService.getClaimsByHandler(userDetails.getUserId(), page);
+        } else {
+            claimsPage = rawClaimService.getAllClaims(page);
+        }
+
         model.addAttribute("claimsPage", claimsPage);
         model.addAttribute("claims", claimsPage.getContent());
         model.addAttribute("pageNumbers", buildPageNumbers(claimsPage.getNumber(), claimsPage.getTotalPages()));
@@ -33,6 +49,26 @@ public class ClaimViewController extends BaseController {
         model.addAttribute("activeGroup", "claims");
         model.addAttribute("breadcrumbParent", "Claims");
         model.addAttribute("breadcrumbCurrent", "Danh sách");
+        return "claims/list";
+    }
+
+    // Danh sách claims của investigator
+    @GetMapping("/my-claims")
+    @PreAuthorize("hasRole('INVESTIGATOR')")
+    public String myClaims(
+            @RequestParam(defaultValue = "0") int page,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            Model model) {
+
+        Page<ClaimResponse> claimsPage = rawClaimService.getClaimsByInvestigator(userDetails.getUserId(), page);
+
+        model.addAttribute("claimsPage", claimsPage);
+        model.addAttribute("claims", claimsPage.getContent());
+        model.addAttribute("pageNumbers", buildPageNumbers(claimsPage.getNumber(), claimsPage.getTotalPages()));
+        model.addAttribute("activePage", "claims-my");
+        model.addAttribute("activeGroup", "claims");
+        model.addAttribute("breadcrumbParent", "Claims");
+        model.addAttribute("breadcrumbCurrent", "Claims của tôi");
         return "claims/list";
     }
 
@@ -73,6 +109,41 @@ public class ClaimViewController extends BaseController {
         model.addAttribute("breadcrumbParent", "Claims");
         model.addAttribute("breadcrumbCurrent", "Tạo mới");
         return "claims/create";
+    }
+
+    // Claims của một user cụ thể (chỉ ADMIN)
+    @GetMapping("/by-user/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String claimsByUser(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
+
+        UserResponse targetUser = userService.getUserById(userId);
+        List<ClaimResponse> allClaims = rawClaimService.getClaimsByUser(userId);
+
+        // Phân trang thủ công từ list đã merge
+        int pageSize = 20;
+        int totalItems = allClaims.size();
+        int start = Math.min(page * pageSize, totalItems);
+        int end   = Math.min(start + pageSize, totalItems);
+        List<ClaimResponse> pageContent = allClaims.subList(start, end);
+
+        Page<ClaimResponse> claimsPage = new PageImpl<>(
+                pageContent,
+                PageRequest.of(page, pageSize),
+                totalItems
+        );
+
+        model.addAttribute("targetUser", targetUser);
+        model.addAttribute("claimsPage", claimsPage);
+        model.addAttribute("claims", claimsPage.getContent());
+        model.addAttribute("pageNumbers", buildPageNumbers(claimsPage.getNumber(), claimsPage.getTotalPages()));
+        model.addAttribute("activeGroup", "claims");
+        model.addAttribute("activePage", "claims-list");
+        model.addAttribute("breadcrumbParent", "Claims");
+        model.addAttribute("breadcrumbCurrent", "Claims của " + targetUser.getFullName());
+        return "claims/by-user";
     }
 
     // Detail claim

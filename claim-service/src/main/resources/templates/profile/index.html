@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/head :: head('Hồ sơ của tôi')}"></head>
+
+<body class="bg-light">
+<div class="wrapper d-flex">
+  <div th:replace="~{layout/sidebar :: sidebar}"></div>
+  <div id="sidebarOverlay" class="sidebar-overlay d-none"></div>
+  <div class="main-content d-flex flex-column flex-grow-1">
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <main class="flex-grow-1 p-4">
+
+      <!-- Page header -->
+      <div class="d-flex align-items-center mb-4 gap-2">
+        <i class="bi bi-person-circle fs-4 text-primary"></i>
+        <h5 class="fw-bold mb-0">Hồ sơ của tôi</h5>
+      </div>
+
+      <!-- Flash messages -->
+      <div th:if="${profileSuccessMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i><span th:text="${profileSuccessMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <div th:if="${profileErrorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i><span th:text="${profileErrorMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <div th:if="${passwordSuccessMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i><span th:text="${passwordSuccessMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <div th:if="${passwordErrorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i><span th:text="${passwordErrorMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+
+      <div class="row g-4 align-items-start">
+
+        <!-- Avatar card -->
+        <div class="col-lg-3 col-md-4">
+          <div class="card border-0 shadow-sm text-center p-4">
+            <!-- Avatar circle -->
+            <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
+                 style="width: 90px; height: 90px; font-size: 2.2rem;">
+              <i class="bi bi-person-fill"></i>
+            </div>
+            <h6 class="fw-bold mb-1" th:text="${profile.fullName}">Nguyễn Văn A</h6>
+            <div class="mb-3">
+              <!-- Role badge -->
+              <span th:switch="${profile.role}">
+                <span th:case="'ADMIN'" class="badge bg-danger">ADMIN</span>
+                <span th:case="'INVESTIGATOR'" class="badge bg-primary">INVESTIGATOR</span>
+                <span th:case="'STAFF'" class="badge bg-success">STAFF</span>
+                <span th:case="*" class="badge bg-secondary" th:text="${profile.role}">—</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info & Edit Tabs -->
+        <div class="col-lg-9 col-md-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom pt-3 pb-0">
+              <ul class="nav nav-tabs border-bottom-0" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link fw-medium text-secondary" th:classappend="${passwordErrorMsg != null || passwordSuccessMsg != null} ? '' : 'active'" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab" aria-controls="info" aria-selected="true">
+                    <i class="bi bi-person-lines-fill me-1"></i>Thông tin cá nhân
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link fw-medium text-secondary" th:classappend="${passwordErrorMsg != null || passwordSuccessMsg != null} ? 'active' : ''" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">
+                    <i class="bi bi-shield-lock me-1"></i>Đổi mật khẩu
+                  </button>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="card-body p-4">
+              <div class="tab-content" id="profileTabsContent">
+              
+                <!-- Tab: Thông tin cá nhân -->
+                <div class="tab-pane fade show" th:classappend="${passwordErrorMsg != null || passwordSuccessMsg != null} ? '' : 'active'" id="info" role="tabpanel" aria-labelledby="info-tab">
+                  <form th:action="@{/profile/update}" method="post" th:object="${profileForm}">
+                    <div class="row mb-3 align-items-center">
+                      <label class="col-sm-3 col-form-label text-muted fw-medium">Họ và tên</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control bg-light" th:value="${profile.fullName}" disabled>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3 align-items-center">
+                      <label class="col-sm-3 col-form-label text-muted fw-medium">Email</label>
+                      <div class="col-sm-9">
+                        <input type="email" class="form-control bg-light" th:value="${profile.email}" disabled>
+                      </div>
+                    </div>
+                    
+                    <div class="row mb-3 align-items-center">
+                      <label class="col-sm-3 col-form-label text-muted fw-medium">Vai trò</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control bg-light" th:value="${profile.role}" disabled>
+                      </div>
+                    </div>
+                    
+                    <div class="row mb-3 align-items-center">
+                      <label class="col-sm-3 col-form-label text-muted fw-medium">Phòng ban</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control bg-light" th:value="${profile.department}" disabled>
+                      </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row mb-4 align-items-center">
+                      <label class="col-sm-3 col-form-label text-muted fw-medium">Số điện thoại</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control" th:field="*{phoneNumber}">
+                      </div>
+                    </div>
+                    
+                    <div class="row">
+                      <div class="col-sm-9 offset-sm-3">
+                        <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                
+                <!-- Tab: Đổi mật khẩu -->
+                <div class="tab-pane fade" th:classappend="${passwordErrorMsg != null || passwordSuccessMsg != null} ? 'show active' : ''" id="password" role="tabpanel" aria-labelledby="password-tab">
+                  <form th:action="@{/profile/change-password}" method="post" th:object="${passwordForm}">
+                    
+                    <div class="row mb-3 align-items-center">
+                      <label class="col-sm-4 col-form-label text-muted fw-medium">Mật khẩu hiện tại <span class="text-danger">*</span></label>
+                      <div class="col-sm-8">
+                        <div class="input-group">
+                          <input type="password" class="form-control password-toggle" th:field="*{currentPassword}" required>
+                          <button class="input-group-text toggle-password-btn" type="button" tabindex="-1">
+                            <i class="bi bi-eye text-muted toggle-icon"></i>
+                          </button>
+                        </div>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}">Lỗi</div>
+                      </div>
+                    </div>
+                    
+                    <div class="row mb-3 align-items-center">
+                      <label class="col-sm-4 col-form-label text-muted fw-medium">Mật khẩu mới <span class="text-danger">*</span></label>
+                      <div class="col-sm-8">
+                        <div class="input-group">
+                          <input type="password" class="form-control password-toggle" th:field="*{newPassword}" required>
+                          <button class="input-group-text toggle-password-btn" type="button" tabindex="-1">
+                            <i class="bi bi-eye text-muted toggle-icon"></i>
+                          </button>
+                        </div>
+                        <div class="form-text text-muted small">Tối thiểu 6 ký tự.</div>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}">Lỗi</div>
+                      </div>
+                    </div>
+                    
+                    <div class="row mb-4 align-items-center">
+                      <label class="col-sm-4 col-form-label text-muted fw-medium">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                      <div class="col-sm-8">
+                        <div class="input-group">
+                          <input type="password" class="form-control password-toggle" th:field="*{confirmPassword}" required>
+                          <button class="input-group-text toggle-password-btn" type="button" tabindex="-1">
+                            <i class="bi bi-eye text-muted toggle-icon"></i>
+                          </button>
+                        </div>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">Lỗi</div>
+                      </div>
+                    </div>
+                    
+                    <div class="row">
+                      <div class="col-sm-8 offset-sm-4">
+                        <button type="submit" class="btn btn-warning px-4">Đổi mật khẩu</button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+  </div>
+</div>
+  <div th:replace="~{fragments/scripts :: scripts}"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtns = document.querySelectorAll('.toggle-password-btn');
+      
+      toggleBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const input = this.previousElementSibling;
+          const icon = this.querySelector('.toggle-icon');
+          
+          if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+          } else {
+            input.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -56,7 +56,16 @@
                             <span>Danh sách</span>
                         </a>
                     </li>
-                    <!-- Tạo mới — chỉ STAFF và ADMIN -->
+                    <!-- Claims của tôi - INVESTIGATOR -->
+                    <li class="nav-item" sec:authorize="hasRole('INVESTIGATOR')">
+                        <a th:href="@{/claims/my-claims}"
+                           th:classappend="${activePage == 'claims-my'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-person-lines-fill small"></i>
+                            <span>Claims của tôi</span>
+                        </a>
+                    </li>
+                    <!-- Tạo mới — chỉ STAFF-->
                     <li class="nav-item"
                         sec:authorize="hasAnyRole('STAFF')">
                         <a th:href="@{/claims/create}"
@@ -70,16 +79,16 @@
             </div>
         </li>
 
-        <!-- Phân tích ML — chỉ INVESTIGATOR và ADMIN -->
+        <!-- Phân tích Gian lận — chỉ INVESTIGATOR và ADMIN -->
         <li class="nav-item" sec:authorize="hasAnyRole('INVESTIGATOR','ADMIN')">
             <a class="nav-link d-flex align-items-center gap-2 rounded collapsed"
                data-bs-toggle="collapse"
                href="#predictionsMenu"
                role="button"
-               title="Phân tích ML"
+               title="Phân tích Gian lận"
                th:classappend="${activeGroup == 'predictions'} ? 'active-group' : ''">
                 <i class="bi bi-cpu fs-5 nav-icon"></i>
-                <span class="sidebar-label flex-grow-1">Phân tích ML</span>
+                <span class="sidebar-label flex-grow-1">Phân tích Gian lận</span>
                 <i class="bi bi-chevron-down sidebar-label chevron-icon small"></i>
             </a>
             <div class="collapse sidebar-submenu" id="predictionsMenu"
@@ -90,7 +99,7 @@
                            th:classappend="${activePage == 'predictions-list'} ? 'active' : ''"
                            class="nav-link d-flex align-items-center gap-2 rounded py-1">
                             <i class="bi bi-bar-chart-line small"></i>
-                            <span>Kết quả</span>
+                            <span>Kết quả ML</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -101,30 +110,96 @@
                             <span>Cảnh báo</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a th:href="@{/fraud-intelligence}"
+                           th:classappend="${activePage == 'fraud-suspects'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-shield-exclamation small"></i>
+                            <span>Đối tượng nghi ngờ</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </li>
 
-        <!-- Investigation — chỉ INVESTIGATOR -->
-        <li class="nav-item" sec:authorize="hasRole('INVESTIGATOR')">
-            <a th:href="@{/investigation}"
-               th:classappend="${activePage == 'investigation'} ? 'active' : ''"
-               class="nav-link d-flex align-items-center gap-2 rounded"
-               title="Điều tra">
+        <!-- Tra cứu — STAFF, INVESTIGATOR, ADMIN -->
+        <li class="nav-item" sec:authorize="hasAnyRole('STAFF', 'INVESTIGATOR', 'ADMIN')">
+            <a class="nav-link d-flex align-items-center gap-2 rounded collapsed"
+               data-bs-toggle="collapse"
+               href="#lookupMenu"
+               role="button"
+               title="Tra cứu"
+               th:classappend="${activeGroup == 'lookup'} ? 'active-group' : ''">
                 <i class="bi bi-search fs-5 nav-icon"></i>
-                <span class="sidebar-label">Điều tra</span>
+                <span class="sidebar-label flex-grow-1">Tra cứu</span>
+                <i class="bi bi-chevron-down sidebar-label chevron-icon small"></i>
             </a>
+            <div class="collapse sidebar-submenu" id="lookupMenu"
+                 th:classappend="${activeGroup == 'lookup'} ? 'show' : ''">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a th:href="@{/lookup/beneficiary}"
+                           th:classappend="${activePage == 'lookup-beneficiary'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-person-badge small"></i>
+                            <span>Theo Người thụ hưởng</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a th:href="@{/lookup/provider}"
+                           th:classappend="${activePage == 'lookup-provider'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-hospital small"></i>
+                            <span>Theo Nhà cung cấp</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/lookup/staff}"
+                           th:classappend="${activePage == 'lookup-staff'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-people small"></i>
+                            <span>Theo Nhân viên</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
+
+
 
         <!-- Users — chỉ ADMIN -->
         <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-            <a th:href="@{/users}"
-               th:classappend="${activePage == 'users'} ? 'active' : ''"
-               class="nav-link d-flex align-items-center gap-2 rounded"
-               title="Người dùng">
+            <a class="nav-link d-flex align-items-center gap-2 rounded collapsed"
+               data-bs-toggle="collapse"
+               href="#usersMenu"
+               role="button"
+               title="Người dùng"
+               th:classappend="${activeGroup == 'users'} ? 'active-group' : ''">
                 <i class="bi bi-people fs-5 nav-icon"></i>
-                <span class="sidebar-label">Người dùng</span>
+                <span class="sidebar-label flex-grow-1">Người dùng</span>
+                <i class="bi bi-chevron-down sidebar-label chevron-icon small"></i>
             </a>
+            <div class="collapse sidebar-submenu" id="usersMenu"
+                 th:classappend="${activeGroup == 'users'} ? 'show' : ''">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a th:href="@{/users}"
+                           th:classappend="${activePage == 'users-list'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-list-ul small"></i>
+                            <span>Danh sách</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a th:href="@{/users/create}"
+                           th:classappend="${activePage == 'users-create'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-person-plus small"></i>
+                            <span>Tạo mới</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
 
         <!-- Reports — chỉ ADMIN -->
@@ -140,11 +215,14 @@
 
     </ul>
 
-    <!-- Bottom: User info -->
+    <!-- Bottom: User info → link to profile -->
     <div class="sidebar-footer px-3 py-3 border-top">
-        <div class="d-flex align-items-center gap-2">
+        <a th:href="@{/profile}"
+           class="d-flex align-items-center gap-2 text-decoration-none rounded px-2 py-1 sidebar-profile-link"
+           th:classappend="${activePage == 'profile'} ? 'active-profile' : ''"
+           title="Xem hồ sơ của tôi">
             <div class="avatar-circle bg-primary text-white d-flex align-items-center
-                        justify-content: center rounded-circle flex-shrink-0">
+                        justify-content-center rounded-circle flex-shrink-0">
                 <i class="bi bi-person-fill"></i>
             </div>
             <div class="sidebar-label overflow-hidden">
@@ -153,9 +231,37 @@
                 <div class="text-muted" style="font-size: 0.75rem;"
                      th:text="${userRole} ?: 'ROLE'">ROLE</div>
             </div>
-        </div>
+        </a>
     </div>
 
+    <script th:inline="javascript">
+        // Restore submenu states before paint to prevent flickering/layout shifts
+        (function() {
+            try {
+                const activeGroup = /*[[${activeGroup}]]*/ null;
+                const states = JSON.parse(localStorage.getItem('sidebarSubmenuStates')) || {};
+                for (const [id, isOpen] of Object.entries(states)) {
+                    // Do not close the currently active group
+                    if (activeGroup && id === activeGroup + 'Menu') continue;
+                    
+                    const menu = document.getElementById(id);
+                    if (menu) {
+                        if (isOpen) {
+                            menu.classList.add('show');
+                            const trigger = document.querySelector(`[href="#${id}"]`);
+                            if (trigger) trigger.classList.remove('collapsed');
+                        } else {
+                            menu.classList.remove('show');
+                            const trigger = document.querySelector(`[href="#${id}"]`);
+                            if (trigger) trigger.classList.add('collapsed');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        })();
+    </script>
 </nav>
 </body>
 </html>

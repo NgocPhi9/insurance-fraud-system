@@ -30,3 +30,4 @@ app:
   investigation:
     max-claims-per-investigator: 3
     page-size: 10
+    min-fraud-claims: 2

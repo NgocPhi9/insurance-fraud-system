@@ -26,7 +26,7 @@ Dự án được chia làm 2 phần chính:
 
 ### Bước 1: Thiết lập Cơ sở dữ liệu (MySQL)
 1. Khởi động MySQL Server của bạn.
-2. Chạy file Database.sql
+2. Chạy file Database.sql (Mật khẩu là password với mọi tài khoản có sẵn)
 
 ### Bước 2: Thiết lập Biến môi trường
 1. Sao chép tệp cấu hình mẫu ở thư mục gốc:
@@ -44,11 +44,14 @@ Dự án được chia làm 2 phần chính:
 
 Dịch vụ này sử dụng môi trường ảo (`venv`) của Python và chạy API FastAPI trên cổng `8000`.
 
-1. Mở terminal mới và di chuyển vào thư mục `fraud-ml-service`:
+1. Clone repo tại https://github.com/imvhp/health-insurance-fraud-detection và đổi tên thư mục thành fraud-ml-service
+
+2. Tạo môi trường ảo:
+
    ```bash
-   cd fraud-ml-service
+   python -m venv venv
    ```
-2. Kích hoạt môi trường ảo (`venv`):
+3. Kích hoạt môi trường ảo (`venv`):
    - **Trên Windows (cmd / PowerShell):**
      ```powershell
      venv\Scripts\activate
@@ -57,11 +60,11 @@ Dịch vụ này sử dụng môi trường ảo (`venv`) của Python và chạ
      ```bash
      source venv/bin/activate
      ```
-3. Cài đặt các thư viện cần thiết (nếu chưa cài):
+4. Cài đặt các thư viện cần thiết (nếu chưa cài):
    ```bash
-   pip install -r requirements.txt
+   pip install pandas numpy scikit-learn mlflow streamlit fastapi uvicorn requests
    ```
-4. Khởi chạy FastAPI Backend:
+5. Khởi chạy FastAPI Backend:
    ```bash
    python -m uvicorn src.app.api:app --reload --port 8000
    ```

@@ -1,41 +1,52 @@
 /* ── Variables ─────────────────────────────────────── */
 :root {
---sidebar-width: 250px;
---sidebar-collapsed-width: 68px;
---navbar-height: 56px;
---transition: 0.25s ease;
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 68px;
+    --navbar-height: 56px;
+    --transition: 0.25s ease;
+    /* Custom Bootstrap color palette */
+    --bs-primary: #4361ee;   /* Royal Blue */
+    --bs-success: #35ad31;
+    --bs-danger: #e63946;   /* Coral Red */
+    --bs-warning: #f4a261;   /* Light Orange */
+    --bs-info: #4895ef;      /* Light Blue */
+    --bs-primary-rgb: 67,97,238;
+    --bs-success-rgb: 53, 173, 49;
+    --bs-danger-rgb: 230,57,70;
+    --bs-warning-rgb: 244,162,97;
+    --bs-info-rgb: 72,149,239;
 }
 
 /* ── Layout ─────────────────────────────────────────── */
 .wrapper {
-min-height: 100vh;
+    min-height: 100vh;
 }
 
 .main-content {
-min-height: 100vh;
-margin-left: var(--sidebar-width);
-transition: margin-left var(--transition);
+    min-height: 100vh;
+    margin-left: var(--sidebar-width);
+    transition: margin-left var(--transition);
 }
 
 /* ── Sidebar ────────────────────────────────────────── */
 .sidebar {
-width: var(--sidebar-width);
-min-height: 100vh;
-background: #fff;
-border-right: 1px solid #dee2e6;
-position: fixed;
-top: 0;
-left: 0;
-bottom: 0;
-z-index: 1000;
-transition: width var(--transition);
-overflow: hidden;
-will-change: width;
+    width: var(--sidebar-width);
+    min-height: 100vh;
+    background: #fff;
+    border-right: 1px solid #dee2e6;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transition: width var(--transition);
+    overflow: hidden;
+    will-change: width;
 }
 
 /* Collapsed state */
 .sidebar.collapsed {
-width: var(--sidebar-collapsed-width);
+    width: var(--sidebar-collapsed-width);
 }
 
 .sidebar-label {
@@ -53,12 +64,12 @@ width: var(--sidebar-collapsed-width);
 }
 
 .sidebar.collapsed .sidebar-brand {
-justify-content: center !important;
+    justify-content: center !important;
 }
 
-.sidebar.collapsed + .sidebar-overlay + .main-content,
+.sidebar.collapsed+.sidebar-overlay+.main-content,
 .main-content.collapsed {
-margin-left: var(--sidebar-collapsed-width);
+    margin-left: var(--sidebar-collapsed-width);
 }
 
 /* Căn giữa icon khi collapsed */
@@ -130,10 +141,34 @@ margin-left: var(--sidebar-collapsed-width);
 
 /* Avatar */
 .avatar-circle {
-width: 36px;
-height: 36px;
-font-size: 1rem;
-flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Sidebar footer profile link */
+.sidebar-profile-link {
+    color: #495057;
+    transition: background var(--transition), color var(--transition);
+    white-space: nowrap;
+}
+
+.sidebar-profile-link:hover {
+    background-color: #f0f4ff;
+    color: #0d6efd;
+}
+
+.sidebar-profile-link.active-profile {
+    background-color: #e7f0ff;
+    color: #0d6efd;
+    font-weight: 600;
+}
+
+.sidebar.collapsed .sidebar-profile-link {
+    justify-content: center;
+    gap: 0 !important;
+    padding: 0.4rem 0;
 }
 
 /* ── Toggle btn ─────────────────────────────────────── */
@@ -164,43 +199,43 @@ flex-shrink: 0;
 
 /* ── Navbar (top) ───────────────────────────────────── */
 .top-navbar {
-height: var(--navbar-height);
-position: sticky;
-top: 0;
-z-index: 999;
-box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    height: var(--navbar-height);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
 }
 
 /* ── Sidebar overlay (mobile) ───────────────────────── */
 .sidebar-overlay {
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.4);
-z-index: 999;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 999;
 }
 
 /* ── Footer ─────────────────────────────────────────── */
 .footer {
-margin-top: auto;
+    margin-top: auto;
 }
 
 /* ── Mobile ─────────────────────────────────────────── */
 @media (max-width: 767.98px) {
-.sidebar {
-left: calc(-1 * var(--sidebar-width));
-}
+    .sidebar {
+        left: calc(-1 * var(--sidebar-width));
+    }
 
-.sidebar.mobile-open {
-left: 0;
-}
+    .sidebar.mobile-open {
+        left: 0;
+    }
 
-.main-content {
-margin-left: 0 !important;
-}
+    .main-content {
+        margin-left: 0 !important;
+    }
 
-#sidebarOverlay.d-none {
-display: none !important;
-}
+    #sidebarOverlay.d-none {
+        display: none !important;
+    }
 }
 
 /* ── Sidebar brand layout ───────────────────────────── */
@@ -226,4 +261,225 @@ display: none !important;
 .sidebar.collapsed [data-bs-toggle="collapse"] {
     pointer-events: auto;
     cursor: pointer;
+}
+
+/* ── Tooltips ────────────────────────────────────────── */
+.tooltip {
+  --bs-tooltip-bg: #2b3035;
+  --bs-tooltip-color: #fff;
+  --bs-tooltip-padding-x: 0.5rem;
+  --bs-tooltip-padding-y: 0.25rem;
+  --bs-tooltip-border-radius: 0.25rem;
+  --bs-tooltip-font-size: 0.75rem;
+}
+
+/* ── UI Enhancements ────────────────────────────────── */
+/* ---- Solid badge colors (bootstrap primary) ---- */
+.badge-primary {
+    background-color: var(--bs-primary);
+    color: #fff;
+}
+.badge-success {
+    background-color: var(--bs-success);
+    color: #fff;
+}
+.badge-danger {
+    background-color: var(--bs-danger);
+    color: #fff;
+}
+.badge-warning {
+    background-color: var(--bs-warning);
+    color: #212529;
+}
+.badge-info {
+    background-color: var(--bs-info);
+    color: #fff;
+}
+/* Retain .badge-soft definitions if still used elsewhere */
+
+/* ---- Outline button colors ---- */
+.btn-outline-primary {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+.btn-outline-primary:hover {
+    background-color: var(--bs-primary);
+    color: #fff;
+}
+.btn-outline-success {
+    color: var(--bs-success);
+    border-color: var(--bs-success);
+}
+.btn-outline-success:hover {
+    background-color: var(--bs-success);
+    color: #fff;
+}
+.btn-outline-danger {
+    color: var(--bs-danger);
+    border-color: var(--bs-danger);
+}
+.btn-outline-danger:hover {
+    background-color: var(--bs-danger);
+    color: #fff;
+}
+.btn-outline-warning {
+    color: var(--bs-warning);
+    border-color: var(--bs-warning);
+}
+.btn-outline-warning:hover {
+    background-color: var(--bs-warning);
+    color: #212529;
+}
+/* ---- Navbar dropdown fix ---- */
+.navbar .dropdown {
+    position: relative;
+}
+
+/* ---- Navbar and dropdown z-index ---- */
+.top-navbar {
+    position: sticky;
+    z-index: 1050; /* above sidebar and cards */
+    top: 0;
+}
+
+.navbar .dropdown {
+    position: relative;
+}
+
+.navbar .dropdown-menu {
+    z-index: 1100 !important; /* ensure dropdown appears above cards */
+    min-width: 12rem;
+}
+
+/* ---- Ensure cards stay beneath navbar dropdown ---- */
+.card {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* ---- Outline button colors continued ---- */
+.btn-outline-secondary {
+    color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+}
+.btn-outline-secondary:hover {
+    background-color: var(--bs-secondary);
+    color: #fff;
+}
+
+.btn-outline-success {
+    color: var(--bs-success);
+    border-color: var(--bs-success);
+}
+.btn-outline-success:hover {
+    background-color: var(--bs-success);
+    color: #fff;
+}
+
+.btn-outline-danger {
+    color: var(--bs-danger);
+    border-color: var(--bs-danger);
+}
+.btn-outline-danger:hover {
+    background-color: var(--bs-danger);
+    color: #fff;
+}
+
+.btn-outline-warning {
+    color: var(--bs-warning);
+    border-color: var(--bs-warning);
+}
+.btn-outline-warning:hover {
+    background-color: var(--bs-warning);
+    color: #212529;
+}
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+.badge-soft-success {
+    background-color: rgba(var(--bs-success-rgb), 0.1);
+    color: var(--bs-success);
+}
+.badge-soft-danger {
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    color: var(--bs-danger);
+}
+.badge-soft-warning {
+    background-color: rgba(var(--bs-warning-rgb), 0.15);
+    color: var(--bs-warning);
+}
+.badge-soft-info {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    color: var(--bs-info);
+}
+.badge-soft-secondary {
+    background-color: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+}
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+    border-radius: 0.75rem;
+}
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+/* ---- Custom button colors using the new CSS variables ---- */
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+.btn-primary:hover {
+    background-color: var(--bs-primary);
+    opacity: 0.9;
+    color: #fff;
+}
+.btn-success {
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+    color: #fff;
+}
+.btn-success:hover {
+    background-color: var(--bs-success);
+    opacity: 0.9;
+    color: #fff;
+}
+.btn-danger {
+    background-color: var(--bs-danger);
+    border-color: var(--bs-danger);
+    color: #fff;
+}
+.btn-danger:hover {
+    background-color: var(--bs-danger);
+    opacity: 0.9;
+    color: #fff;
+}
+.btn-warning {
+    background-color: var(--bs-warning);
+    border-color: var(--bs-warning);
+    color: #212529;
+}
+.btn-warning:hover {
+    background-color: var(--bs-warning);
+    opacity: 0.9;
+    color: #212529;
+}
+
+.btn {
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.btn:hover {
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.1);
+}
+
+/* ---- Navbar dropdown fix ---- */
+.navbar .dropdown-menu {
+    z-index: 9999; /* Ensure it appears above other content */
+    min-width: 12rem;
 }

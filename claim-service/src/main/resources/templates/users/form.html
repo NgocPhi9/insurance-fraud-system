@@ -18,9 +18,6 @@
               th:text="${isEdit} ? 'Chỉnh sửa tài khoản' : 'Tạo tài khoản mới'">
             Tạo tài khoản mới
           </h5>
-          <span class="text-muted small"
-                th:text="${isEdit} ? 'Cập nhật thông tin và role cho tài khoản' : 'Thêm người dùng mới vào hệ thống'">
-          </span>
         </div>
         <a th:href="@{/users}" class="btn btn-sm btn-outline-secondary">
           <i class="bi bi-arrow-left me-1"></i>Quay lại
@@ -34,8 +31,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
 
-      <div class="row justify-content-center">
-        <div class="col-lg-7">
+      <div class="row g-4 align-items-start">
+        <div class="col-lg-8">
 
           <!-- Form card -->
           <div class="card border-0 shadow-sm">
@@ -109,7 +106,7 @@
                              th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
                              placeholder="Tối thiểu 6 ký tự">
                       <button class="btn btn-outline-secondary" type="button"
-                              onclick="togglePassword()" title="Hiện/ẩn mật khẩu">
+                              onclick="togglePassword()" data-bs-toggle="tooltip" data-bs-placement="top" title="Hiện/ẩn mật khẩu">
                         <i class="bi bi-eye" id="eyeIcon"></i>
                       </button>
                       <div class="invalid-feedback" th:errors="*{password}"></div>
@@ -152,7 +149,6 @@
 
                 <!-- Buttons -->
                 <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                  <a th:href="@{/users}" class="btn btn-outline-secondary">Hủy</a>
                   <button type="submit" class="btn btn-primary">
                     <i class="bi bi-person-plus me-1"></i>Tạo tài khoản
                   </button>
@@ -186,7 +182,7 @@
                     <input type="email" class="form-control bg-light"
                            th:value="${targetUser.email}"
                            readonly
-                           title="Email không thể thay đổi">
+                           data-bs-toggle="tooltip" data-bs-placement="top" title="Email không thể thay đổi">
                     <div class="form-text">Email không thể thay đổi</div>
                   </div>
 
@@ -226,7 +222,6 @@
 
                 <!-- Buttons -->
                 <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                  <a th:href="@{/users}" class="btn btn-outline-secondary">Hủy</a>
                   <button type="submit" class="btn btn-primary">
                     <i class="bi bi-floppy me-1"></i>Lưu thay đổi
                   </button>
@@ -236,38 +231,52 @@
             </div><!-- /card-body -->
           </div><!-- /card -->
 
-          <!-- Role guide card -->
-          <div class="card border-0 shadow-sm mt-3">
-            <div class="card-header bg-white border-bottom py-2">
-              <h6 class="mb-0 fw-semibold small">
-                <i class="bi bi-info-circle me-2 text-primary"></i>Hướng dẫn phân quyền
+        </div><!-- /col-lg-8 -->
+
+        <!-- Role guide panel: bên phải -->
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+              <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-shield-check me-2 text-primary"></i>Hướng dẫn phân quyền
               </h6>
             </div>
-            <div class="card-body py-2">
-              <div class="row g-2">
-                <div class="col-md-4">
-                  <div class="d-flex align-items-start gap-2">
-                    <span class="badge bg-success mt-1 flex-shrink-0">STAFF</span>
-                    <span class="text-muted small">Nhập liệu, tạo claim bảo hiểm</span>
+            <div class="card-body">
+              <div class="d-flex flex-column gap-3">
+
+                <div class="d-flex align-items-start gap-3 p-2 rounded bg-success-subtle">
+                  <span class="badge bg-success flex-shrink-0 mt-1">STAFF</span>
+                  <div>
+                    <div class="fw-semibold small text-success-emphasis">Nhân viên nhập liệu</div>
+                    <div class="text-muted" style="font-size:0.8rem;">Tạo và quản lý claim bảo hiểm. Không có quyền điều tra.</div>
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <div class="d-flex align-items-start gap-2">
-                    <span class="badge bg-primary mt-1 flex-shrink-0">INVESTIGATOR</span>
-                    <span class="text-muted small">Điều tra, phán quyết claim gian lận</span>
+
+                <div class="d-flex align-items-start gap-3 p-2 rounded bg-primary-subtle">
+                  <span class="badge bg-primary flex-shrink-0 mt-1">INV</span>
+                  <div>
+                    <div class="fw-semibold small text-primary-emphasis">Điều tra viên</div>
+                    <div class="text-muted" style="font-size:0.8rem;">Nhận claim nghi ngờ, điều tra và phán quyết gian lận.</div>
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <div class="d-flex align-items-start gap-2">
-                    <span class="badge bg-danger mt-1 flex-shrink-0">ADMIN</span>
-                    <span class="text-muted small">Toàn quyền quản trị hệ thống</span>
+
+                <div class="d-flex align-items-start gap-3 p-2 rounded bg-danger-subtle">
+                  <span class="badge bg-danger flex-shrink-0 mt-1">ADMIN</span>
+                  <div>
+                    <div class="fw-semibold small text-danger-emphasis">Quản trị viên</div>
+                    <div class="text-muted" style="font-size:0.8rem;">Toàn quyền: quản lý user, xem báo cáo, cấu hình hệ thống.</div>
                   </div>
                 </div>
+
               </div>
             </div>
+            <div class="card-footer bg-white border-top text-muted small py-2">
+              <i class="bi bi-exclamation-circle me-1 text-warning"></i>
+              Một tài khoản chỉ có thể giữ một role.
+            </div>
           </div>
+        </div><!-- /col-lg-4 -->
 
-        </div>
       </div>
 
     </main>

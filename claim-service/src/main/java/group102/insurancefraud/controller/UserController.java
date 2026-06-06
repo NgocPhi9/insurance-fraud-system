@@ -17,7 +17,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -54,6 +53,8 @@ public class UserController extends BaseController {
         model.addAttribute("selectedStatus", status);
         model.addAttribute("activePage", "users");
         model.addAttribute("totalUsers", userService.getAllUsers().size());
+        model.addAttribute("breadcrumbParent", "Người dùng");
+        model.addAttribute("breadcrumbCurrent", "Danh sách");
         return "users/list";
     }
 
@@ -65,6 +66,8 @@ public class UserController extends BaseController {
         model.addAttribute("roles", UserRole.values());
         model.addAttribute("isEdit", false);
         model.addAttribute("activePage", "users");
+        model.addAttribute("breadcrumbParent", "Người dùng");
+        model.addAttribute("breadcrumbCurrent", "Tạo mới");
         return "users/form";
     }
 
@@ -79,6 +82,8 @@ public class UserController extends BaseController {
             model.addAttribute("roles", UserRole.values());
             model.addAttribute("isEdit", false);
             model.addAttribute("activePage", "users");
+            model.addAttribute("breadcrumbParent", "Người dùng");
+            model.addAttribute("breadcrumbCurrent", "Tạo mới");
             return "users/form";
         }
 
@@ -92,6 +97,8 @@ public class UserController extends BaseController {
             model.addAttribute("roles", UserRole.values());
             model.addAttribute("isEdit", false);
             model.addAttribute("activePage", "users");
+            model.addAttribute("breadcrumbParent", "Người dùng");
+            model.addAttribute("breadcrumbCurrent", "Tạo mới");
             return "users/form";
         }
     }
@@ -113,6 +120,8 @@ public class UserController extends BaseController {
         model.addAttribute("roles", UserRole.values());
         model.addAttribute("isEdit", true);
         model.addAttribute("activePage", "users");
+        model.addAttribute("breadcrumbParent", "Người dùng");
+        model.addAttribute("breadcrumbCurrent", "Chỉnh sửa");
         return "users/form";
     }
 
@@ -131,6 +140,8 @@ public class UserController extends BaseController {
             model.addAttribute("roles", UserRole.values());
             model.addAttribute("isEdit", true);
             model.addAttribute("activePage", "users");
+            model.addAttribute("breadcrumbParent", "Người dùng");
+            model.addAttribute("breadcrumbCurrent", "Chỉnh sửa");
             return "users/form";
         }
 
@@ -145,6 +156,8 @@ public class UserController extends BaseController {
             model.addAttribute("roles", UserRole.values());
             model.addAttribute("isEdit", true);
             model.addAttribute("activePage", "users");
+            model.addAttribute("breadcrumbParent", "Người dùng");
+            model.addAttribute("breadcrumbCurrent", "Chỉnh sửa");
             return "users/form";
         }
     }

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/head :: head('Claims của ' + ${targetUser.fullName})}"></head>
+
+<body class="bg-light">
+  <div class="wrapper d-flex">
+    <div th:replace="~{layout/sidebar :: sidebar}"></div>
+    <div id="sidebarOverlay" class="sidebar-overlay d-none"></div>
+    <div class="main-content d-flex flex-column flex-grow-1">
+      <div th:replace="~{layout/navbar :: navbar}"></div>
+
+      <main class="flex-grow-1 p-4">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div class="d-flex align-items-center gap-3">
+            <!-- Avatar -->
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:44px;height:44px;font-size:1.1rem;">
+              <i class="bi bi-person-fill"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <h5 class="fw-bold mb-0" th:text="'Claims của ' + ${targetUser.fullName}">Claims của User</h5>
+                <span th:switch="${targetUser.role}">
+                  <span th:case="'STAFF'"       class="badge badge-soft-success">STAFF</span>
+                  <span th:case="'INVESTIGATOR'" class="badge badge-soft-primary">INVESTIGATOR</span>
+                  <span th:case="*"              class="badge badge-soft-secondary" th:text="${targetUser.role}">—</span>
+                </span>
+              </div>
+              <span class="text-muted small">
+                Tổng:
+                <strong th:text="${claimsPage.totalElements}">0</strong> claims
+                &nbsp;·&nbsp; Trang
+                <strong th:text="${claimsPage.number + 1}">1</strong> /
+                <strong th:text="${claimsPage.totalPages > 0} ? ${claimsPage.totalPages} : 1">1</strong>
+              </span>
+            </div>
+          </div>
+          <a th:href="@{/users}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại
+          </a>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body py-2">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-5">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white">
+                    <i class="bi bi-search text-muted"></i>
+                  </span>
+                  <input type="text" id="searchInput" class="form-control border-start-0"
+                    placeholder="Tìm theo Claim ID, Provider...">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <select id="statusFilter" class="form-select form-select-sm">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="FLAGGED">Flagged</option>
+                  <option value="UNDER_REVIEW">Under Review</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="REJECTED">Rejected</option>
+                </select>
+              </div>
+              <div class="col-md-auto ms-auto">
+                <button class="btn btn-sm btn-outline-secondary" onclick="resetFilter()">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="claimsTable">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-3">Claim ID</th>
+                    <th>Provider</th>
+                    <th>Từ ngày</th>
+                    <th>Đến ngày</th>
+                    <th>Số tiền</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-center">Vai trò</th>
+                    <th class="text-center pe-3">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="claim : ${claims}"
+                      class="claim-row"
+                      th:attr="data-status=${claim.claimStatus},
+                               data-search=${claim.clmId + ' ' + claim.prvdrNum}">
+
+                    <!-- Claim ID -->
+                    <td class="ps-3">
+                      <span class="fw-semibold text-primary"
+                            th:text="${claim.clmId} ?: '#' + ${claim.rawClaimId}"></span>
+                    </td>
+
+                    <!-- Provider -->
+                    <td th:text="${claim.prvdrNum} ?: '—'"></td>
+
+                    <!-- Ngày -->
+                    <td th:text="${claim.clmFromDt} ?: '—'"></td>
+                    <td th:text="${claim.clmThruDt} ?: '—'"></td>
+
+                    <!-- Số tiền -->
+                    <td>
+                      <span th:if="${claim.clmPmtAmt != null}"
+                            th:text="'$' + ${#numbers.formatDecimal(claim.clmPmtAmt,1,'COMMA',2,'POINT')}"></span>
+                      <span th:unless="${claim.clmPmtAmt != null}">—</span>
+                    </td>
+
+                    <!-- Trạng thái -->
+                    <td class="text-center">
+                      <span th:switch="${claim.claimStatus?.name()}">
+                        <span th:case="'PENDING'"      class="badge badge-soft-secondary">Pending</span>
+                        <span th:case="'FLAGGED'"      class="badge badge-soft-warning">Flagged</span>
+                        <span th:case="'UNDER_REVIEW'" class="badge badge-soft-info">Under Review</span>
+                        <span th:case="'APPROVED'"     class="badge badge-soft-success">Approved</span>
+                        <span th:case="'REJECTED'"     class="badge badge-soft-danger">Rejected</span>
+                        <span th:case="*"              class="badge badge-soft-secondary" th:text="${claim.claimStatus}">—</span>
+                      </span>
+                    </td>
+
+                    <!-- Vai trò -->
+                    <td class="text-center">
+                      <span th:if="${claim.claimHandlerId == targetUser.userId}"
+                            class="badge bg-success-subtle text-success border border-success-subtle">
+                        <i class="bi bi-pencil-fill me-1" style="font-size:0.6rem;"></i>Handler
+                      </span>
+                      <span th:if="${claim.investigatorId == targetUser.userId}"
+                            class="badge bg-primary-subtle text-primary border border-primary-subtle"
+                            th:classappend="${claim.claimHandlerId == targetUser.userId} ? 'ms-1' : ''">
+                        <i class="bi bi-search me-1" style="font-size:0.6rem;"></i>Investigator
+                      </span>
+                    </td>
+
+                    <!-- Thao tác -->
+                    <td class="text-center pe-3">
+                      <a th:href="@{/claims/{id}(id=${claim.rawClaimId})}"
+                         class="btn btn-sm btn-outline-primary"
+                         data-bs-toggle="tooltip" data-bs-placement="top" title="Xem chi tiết">
+                         <i class="bi bi-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+
+                  <!-- Empty state -->
+                  <tr th:if="${claims.isEmpty()}">
+                    <td colspan="8" class="text-center py-5 text-muted">
+                      <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                      <span th:text="${targetUser.fullName} + ' chưa phụ trách claim nào'">Chưa có claim</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center mt-3" th:if="${claimsPage.totalPages > 1}">
+          <nav aria-label="Phân trang claims">
+            <ul class="pagination pagination-sm mb-0">
+
+              <!-- Prev -->
+              <li class="page-item" th:classappend="${claimsPage.first} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/claims/by-user/{uid}(uid=${targetUser.userId},page=${claimsPage.number - 1})}"
+                   aria-label="Trang trước">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+
+              <!-- Smart page numbers -->
+              <th:block th:each="p : ${pageNumbers}">
+                <li class="page-item disabled" th:if="${p == null}">
+                  <span class="page-link px-2">&hellip;</span>
+                </li>
+                <li class="page-item" th:unless="${p == null}"
+                    th:classappend="${p == claimsPage.number} ? 'active'">
+                  <a class="page-link"
+                     th:href="@{/claims/by-user/{uid}(uid=${targetUser.userId},page=${p})}"
+                     th:text="${p + 1}">1</a>
+                </li>
+              </th:block>
+
+              <!-- Next -->
+              <li class="page-item" th:classappend="${claimsPage.last} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/claims/by-user/{uid}(uid=${targetUser.userId},page=${claimsPage.number + 1})}"
+                   aria-label="Trang sau">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+
+            </ul>
+          </nav>
+        </div>
+
+      </main>
+
+      <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/scripts :: scripts}"></div>
+  <script>
+    // ── Client-side search + filter ──────────────────────────────────────────
+    function applyFilter() {
+      const q      = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const status = document.getElementById('statusFilter')?.value || '';
+
+      document.querySelectorAll('.claim-row').forEach(row => {
+        const matchSearch = !q      || (row.dataset.search || '').toLowerCase().includes(q);
+        const matchStatus = !status || row.dataset.status === status;
+        row.style.display = (matchSearch && matchStatus) ? '' : 'none';
+      });
+    }
+
+    document.getElementById('searchInput')?.addEventListener('input', applyFilter);
+    document.getElementById('statusFilter')?.addEventListener('change', applyFilter);
+
+    function resetFilter() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('statusFilter').value = '';
+      applyFilter();
+    }
+
+    // ── Tooltips ──────────────────────────────────────────────────────────────
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+      new bootstrap.Tooltip(el);
+    });
+  </script>
+</body>
+</html>

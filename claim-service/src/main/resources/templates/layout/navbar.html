@@ -85,9 +85,11 @@
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                    <a th:href="@{/logout}" class="dropdown-item text-danger">
-                        <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
-                    </a>
+                    <form th:action="@{/auth/logout}" method="post" class="m-0">
+                        <button type="submit" class="dropdown-item text-danger d-flex align-items-center bg-transparent border-0 w-100 text-start">
+                            <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>

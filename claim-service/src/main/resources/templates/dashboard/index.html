@@ -8,12 +8,424 @@
     <div class="main-content d-flex flex-column flex-grow-1">
         <div th:replace="~{layout/navbar :: navbar}"></div>
         <main class="flex-grow-1 p-4">
-            <h5 class="fw-bold">Dashboard</h5>
-            <p class="text-muted">Đang phát triển...</p>
+
+            <!-- Welcome Banner -->
+            <div class="card bg-primary bg-gradient text-white mb-4 rounded-4 shadow-sm border-0">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h4 class="fw-bold mb-1">Chào mừng trở lại, <span th:text="${#authentication.principal.fullName}">User</span>!</h4>
+                        <p class="mb-0 text-white-50">Dưới đây là tổng quan tình hình hoạt động của bạn.</p>
+                    </div>
+                    <div class="text-end">
+                        <div class="text-white-50 small mb-1">Dữ liệu trong:</div>
+                        <div class="btn-group" role="group">
+                            <a th:href="@{/dashboard(range=7)}" class="btn btn-sm btn-outline-light" th:classappend="${selectedRange == 7} ? 'active'">7 Ngày</a>
+                            <a th:href="@{/dashboard(range=30)}" class="btn btn-sm btn-outline-light" th:classappend="${selectedRange == 30} ? 'active'">30 Ngày</a>
+                            <a th:href="@{/dashboard(range=365)}" class="btn btn-sm btn-outline-light" th:classappend="${selectedRange == 365} ? 'active'">1 Năm</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════
+                 ADMIN Dashboard
+                 ════════════════════════════════════════ -->
+            <th:block th:if="${role == 'ADMIN'}">
+
+                <!-- Row 1: 4 main KPI cards -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-primary fs-2 fw-bold" th:text="${metrics.totalClaims}">0</div>
+                            <div class="text-muted small mt-1">Tổng số Claims</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-danger fs-2 fw-bold" th:text="${metrics.totalFraudClaims}">0</div>
+                            <div class="text-muted small mt-1">Claims Gian lận</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-success fs-2 fw-bold" th:text="${metrics.totalUsers}">0</div>
+                            <div class="text-muted small mt-1">Người dùng</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-warning fs-2 fw-bold"
+                                 th:text="${metrics.totalAmountPrevented != null ? '$' + #numbers.formatDecimal(metrics.totalAmountPrevented, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</div>
+                            <div class="text-muted small mt-1">Số tiền ngăn chặn</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: 4 secondary KPI cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
+                            <div class="rounded-3 bg-warning bg-opacity-10 p-3 text-warning fs-4">⏳</div>
+                            <div>
+                                <div class="fw-bold fs-5" th:text="${metrics.pendingClaims}">0</div>
+                                <div class="text-muted small">Đang chờ xử lý</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
+                            <div class="rounded-3 bg-danger bg-opacity-10 p-3 text-danger fs-4">🚨</div>
+                            <div>
+                                <div class="fw-bold fs-5" th:text="${metrics.openAlerts}">0</div>
+                                <div class="text-muted small">ML Alerts đang mở</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
+                            <div class="rounded-3 bg-info bg-opacity-10 p-3 text-info fs-4">📋</div>
+                            <div>
+                                <div class="fw-bold fs-5" th:text="${metrics.unassignedClaims}">0</div>
+                                <div class="text-muted small">Chưa giao điều tra</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
+                            <div class="rounded-3 bg-primary bg-opacity-10 p-3 text-primary fs-4">🏥</div>
+                            <div>
+                                <div class="fw-bold fs-5" th:text="${metrics.suspiciousProviders}">0</div>
+                                <div class="text-muted small">Providers nghi ngờ</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Timeline chart + Status donut -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">📈 Biểu đồ Lượng Claims theo Thời gian</div>
+                            <div class="card-body">
+                                <div class="timelineChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">🥧 Phân bổ Trạng thái</div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <div class="statusChart w-100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 4: Top fraud providers + Risk score distribution -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">🏆 Top 5 Providers Gian lận</div>
+                            <div class="card-body">
+                                <div id="topProvidersChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">📊 Phân bổ Risk Score (ML)</div>
+                            <div class="card-body">
+                                <div id="riskBucketChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </th:block>
+
+            <!-- ════════════════════════════════════════
+                 INVESTIGATOR Dashboard
+                 ════════════════════════════════════════ -->
+            <th:block th:if="${role == 'INVESTIGATOR'}">
+
+                <!-- Row 1: Main KPI cards -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-primary fs-2 fw-bold" th:text="${metrics.claimsAssigned}">0</div>
+                            <div class="text-muted small mt-1">Hồ sơ được Giao</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-info fs-2 fw-bold" th:text="${metrics.claimsPendingReview}">0</div>
+                            <div class="text-muted small mt-1">Đang chờ Xử lý</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-danger fs-2 fw-bold" th:text="${metrics.fraudIdentified}">0</div>
+                            <div class="text-muted small mt-1">Gian lận Phát hiện</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-warning fs-2 fw-bold"
+                                 th:text="${metrics.avgRiskScore != null ? #numbers.formatDecimal(metrics.avgRiskScore, 1, 1) + '%' : '0%'}">0%</div>
+                            <div class="text-muted small mt-1">Trung bình Risk Score</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Alert card -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3"
+                             th:classappend="${metrics.alertsAssigned > 0} ? 'border-start border-danger border-3' : ''">
+                            <div class="rounded-3 bg-danger bg-opacity-10 p-3 text-danger fs-4">🚨</div>
+                            <div>
+                                <div class="fw-bold fs-5" th:text="${metrics.alertsAssigned}">0</div>
+                                <div class="text-muted small">Claims cần Alert</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card card-body h-100 border-0 shadow-sm">
+                            <div class="text-muted small mb-1">Tỷ lệ phát hiện gian lận</div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="progress flex-grow-1" style="height:10px;">
+                                    <div class="progress-bar bg-danger"
+                                         th:style="${metrics.claimsAssigned > 0 ? 'width:' + (metrics.fraudIdentified * 100 / metrics.claimsAssigned) + '%' : 'width:0%'}"></div>
+                                </div>
+                                <span class="fw-bold text-danger"
+                                      th:text="${metrics.claimsAssigned > 0 ? #numbers.formatDecimal(metrics.fraudIdentified * 100.0 / metrics.claimsAssigned, 1, 1) + '%' : '0%'}">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Timeline + Status donut -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">📈 Hồ sơ được giao theo Thời gian</div>
+                            <div class="card-body">
+                                <div class="timelineChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">🥧 Trạng thái Hồ sơ</div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <div class="statusChart w-100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 4: Risk groups radial chart -->
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">⚠️ Phân bổ Mức độ Rủi ro (ML)</div>
+                            <div class="card-body">
+                                <div id="riskGroupChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </th:block>
+
+            <!-- ════════════════════════════════════════
+                 STAFF Dashboard
+                 ════════════════════════════════════════ -->
+            <th:block th:if="${role == 'STAFF'}">
+
+                <!-- Row 1: Main KPI cards -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-primary fs-2 fw-bold" th:text="${metrics.claimsCreated}">0</div>
+                            <div class="text-muted small mt-1">Hồ sơ đã Tạo</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-success fs-2 fw-bold" th:text="${metrics.claimsApproved}">0</div>
+                            <div class="text-muted small mt-1">Đã được Duyệt</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-warning fs-2 fw-bold" th:text="${metrics.claimsFlagged}">0</div>
+                            <div class="text-muted small mt-1">Đang bị Cảnh báo</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-info fs-2 fw-bold"
+                                 th:text="${metrics.totalClaimAmount != null ? '$' + #numbers.formatDecimal(metrics.totalClaimAmount, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</div>
+                            <div class="text-muted small mt-1">Tổng giá trị Claim</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Secondary cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
+                            <div class="rounded-3 bg-warning bg-opacity-10 p-3 text-warning fs-4">📋</div>
+                            <div>
+                                <div class="fw-bold fs-5" th:text="${metrics.unassignedByStaff}">0</div>
+                                <div class="text-muted small">Chưa giao Điều tra viên</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card card-body h-100 border-0 shadow-sm">
+                            <div class="text-muted small mb-1">Tỷ lệ duyệt claim</div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="progress flex-grow-1" style="height:10px;">
+                                    <div class="progress-bar bg-success"
+                                         th:style="${metrics.claimsCreated > 0 ? 'width:' + (metrics.claimsApproved * 100 / metrics.claimsCreated) + '%' : 'width:0%'}"></div>
+                                </div>
+                                <span class="fw-bold text-success"
+                                      th:text="${metrics.claimsCreated > 0 ? #numbers.formatDecimal(metrics.claimsApproved * 100.0 / metrics.claimsCreated, 1, 1) + '%' : '0%'}">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Timeline + Status donut -->
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">📈 Hoạt động tạo Hồ sơ</div>
+                            <div class="card-body">
+                                <div class="timelineChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">🥧 Phân bổ Trạng thái</div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <div class="statusChart w-100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </th:block>
+
         </main>
         <div th:replace="~{fragments/footer :: footer}"></div>
     </div>
 </div>
 <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<script th:inline="javascript">
+document.addEventListener("DOMContentLoaded", function() {
+    var role         = [[${role}]];
+    var timelineData = [[${metrics.claimsTimeline}]]  || [];
+    var statusMap    = [[${metrics.statusDistribution}]] || {};
+
+    var dates  = timelineData.map(function(i){ return i.date; });
+    var counts = timelineData.map(function(i){ return i.count; });
+
+    var statusSeries = [
+        statusMap.PENDING      || 0,
+        statusMap.FLAGGED      || 0,
+        statusMap.UNDER_REVIEW || 0,
+        statusMap.APPROVED     || 0,
+        statusMap.REJECTED     || 0
+    ];
+    var statusLabels = ['Pending', 'Flagged', 'Under Review', 'Approved', 'Rejected'];
+    var statusColors = ['#6c757d', '#f4a261', '#4895ef', '#35ad31', '#e63946'];
+
+    /* ── Status Donut Charts ─────────────────────────────── */
+    document.querySelectorAll('.statusChart').forEach(function(el) {
+        new ApexCharts(el, {
+            series: statusSeries,
+            chart: { type: 'donut', height: 300 },
+            labels: statusLabels,
+            colors: statusColors,
+            plotOptions: { pie: { donut: { size: '65%' } } },
+            dataLabels: { enabled: false },
+            legend: { position: 'bottom' }
+        }).render();
+    });
+
+    /* ── Timeline Area Charts ────────────────────────────── */
+    document.querySelectorAll('.timelineChart').forEach(function(el) {
+        new ApexCharts(el, {
+            series: [{ name: 'Claims', data: counts }],
+            chart: { type: 'area', height: 300, toolbar: { show: false }, zoom: { enabled: false } },
+            colors: ['#4361ee'],
+            fill: { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.02, stops: [0, 90, 100] } },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 2 },
+            xaxis: { categories: dates, labels: { rotate: -30, style: { fontSize: '11px' } } },
+            tooltip: { x: { show: true } }
+        }).render();
+    });
+
+    /* ── ADMIN: Top Providers Bar ────────────────────────── */
+    var topProvidersEl = document.getElementById('topProvidersChart');
+    if (topProvidersEl) {
+        var topProviders = [[${metrics.topFraudProviders}]] || [];
+        var providerLabels = topProviders.map(function(p){ return p.key || 'N/A'; });
+        var providerCounts = topProviders.map(function(p){ return p.value || 0; });
+        new ApexCharts(topProvidersEl, {
+            series: [{ name: 'Fraud Claims', data: providerCounts }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+            colors: ['#e63946'],
+            dataLabels: { enabled: true },
+            xaxis: { categories: providerLabels, labels: { style: { fontSize: '12px' } } },
+            tooltip: { x: { show: true } }
+        }).render();
+    }
+
+    /* ── ADMIN: Risk Bucket Bar ──────────────────────────── */
+    var riskBucketEl = document.getElementById('riskBucketChart');
+    if (riskBucketEl) {
+        var riskBuckets = [[${metrics.riskBuckets}]] || [0,0,0,0];
+        new ApexCharts(riskBucketEl, {
+            series: [{ name: 'Số claims', data: riskBuckets }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
+            colors: ['#35ad31', '#4895ef', '#f4a261', '#e63946'],
+            dataLabels: { enabled: false },
+            xaxis: { categories: ['Thấp (0–25%)', 'Trung bình (25–50%)', 'Cao (50–75%)', 'Rất cao (75–100%)'] },
+            tooltip: { y: { formatter: function(v){ return v + ' claims'; } } }
+        }).render();
+    }
+
+    /* ── INVESTIGATOR: Risk Groups Radial ────────────────── */
+    var riskGroupEl = document.getElementById('riskGroupChart');
+    if (riskGroupEl) {
+        var riskGroups = [[${metrics.riskGroups}]] || [0,0,0];
+        var total = riskGroups.reduce(function(a,b){ return a+b; }, 0) || 1;
+        new ApexCharts(riskGroupEl, {
+            series: [
+                Math.round(riskGroups[2] * 100 / total),
+                Math.round(riskGroups[1] * 100 / total),
+                Math.round(riskGroups[0] * 100 / total)
+            ],
+            chart: { type: 'radialBar', height: 320 },
+            plotOptions: { radialBar: { dataLabels: {
+                name: { fontSize: '16px' },
+                value: { fontSize: '14px' },
+                total: { show: true, label: 'Đã quét', formatter: function(){ return total + ' claims'; } }
+            }}},
+            labels: ['Nguy cơ Cao (≥70%)', 'Nguy cơ Trung (40–70%)', 'Nguy cơ Thấp (<40%)'],
+            colors: ['#e63946', '#f4a261', '#35ad31']
+        }).render();
+    }
+});
+</script>
 </body>
 </html>
