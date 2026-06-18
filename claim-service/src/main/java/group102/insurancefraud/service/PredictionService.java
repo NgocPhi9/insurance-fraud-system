@@ -15,8 +15,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;  // ← import này, không phải jakarta
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -154,6 +155,7 @@ public class PredictionService {
             } else {
                 // ML cho là bình thường → APPROVED luôn
                 rawClaim.setClaimStatus(ClaimStatus.APPROVED);
+                rawClaim.setResolvedAt(LocalDateTime.now());
             }
             rawClaimRepository.save(rawClaim);
         } else {

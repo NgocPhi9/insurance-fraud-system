@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,8 +56,14 @@ public class InvestigationService {
 
         // Cập nhật status claim
         switch (request.getAction()) {
-            case "APPROVE" -> claim.setClaimStatus(ClaimStatus.APPROVED);
-            case "REJECT"  -> claim.setClaimStatus(ClaimStatus.REJECTED);
+            case "APPROVE" -> {
+                claim.setClaimStatus(ClaimStatus.APPROVED);
+                claim.setResolvedAt(LocalDateTime.now());
+            }
+            case "REJECT"  -> {
+                claim.setClaimStatus(ClaimStatus.REJECTED);
+                claim.setResolvedAt(LocalDateTime.now());
+            }
             case "NOTE"    -> { /* giữ nguyên status */ }
             default -> throw new RuntimeException("Action không hợp lệ: " + request.getAction());
         }

@@ -28,15 +28,44 @@ public class ClaimViewController extends BaseController {
     private final RawClaimService rawClaimService;
     private final UserService userService;
 
-    // Danh sách claims
+    // Danh sách claims (có thể lọc theo status)
     @GetMapping
     public String listClaims(
             @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false, defaultValue = "false") boolean overdue,
+            @RequestParam(required = false, defaultValue = "false") boolean unassigned,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             Model model) {
 
         Page<ClaimResponse> claimsPage;
-        if ("STAFF".equals(userDetails.getUser().getRole())) {
+        String filterLabel = null;
+
+        if (overdue && "INVESTIGATOR".equals(userDetails.getUser().getRole())) {
+            claimsPage = rawClaimService.getOverdueClaims(userDetails.getUserId(), 7, page);
+            filterLabel = "Case quá hạn (> 7 ngày)";
+        } else if (unassigned && "STAFF".equals(userDetails.getUser().getRole())) {
+            claimsPage = rawClaimService.getUnassignedByStaff(userDetails.getUserId(), page);
+            filterLabel = "Hồ sơ chưa có điều tra viên";
+        } else if (unassigned && "ADMIN".equals(userDetails.getUser().getRole())) {
+            claimsPage = rawClaimService.getUnassignedPending(page);
+            filterLabel = "Claims PENDING chưa được phân công";
+        } else if (status != null && !status.isBlank()) {
+            try {
+                group102.insurancefraud.enums.ClaimStatus claimStatus =
+                        group102.insurancefraud.enums.ClaimStatus.valueOf(status.toUpperCase());
+                if ("INVESTIGATOR".equals(userDetails.getUser().getRole())) {
+                    claimsPage = rawClaimService.getClaimsByInvestigatorAndStatus(userDetails.getUserId(), claimStatus, page);
+                } else if ("STAFF".equals(userDetails.getUser().getRole())) {
+                    claimsPage = rawClaimService.getClaimsByHandlerAndStatus(userDetails.getUserId(), claimStatus, page);
+                } else {
+                    claimsPage = rawClaimService.getClaimsByStatus(claimStatus, page);
+                }
+                filterLabel = "Trạng thái: " + status.toUpperCase();
+            } catch (IllegalArgumentException e) {
+                claimsPage = rawClaimService.getAllClaims(page);
+            }
+        } else if ("STAFF".equals(userDetails.getUser().getRole())) {
             claimsPage = rawClaimService.getClaimsByHandler(userDetails.getUserId(), page);
         } else {
             claimsPage = rawClaimService.getAllClaims(page);
@@ -45,10 +74,11 @@ public class ClaimViewController extends BaseController {
         model.addAttribute("claimsPage", claimsPage);
         model.addAttribute("claims", claimsPage.getContent());
         model.addAttribute("pageNumbers", buildPageNumbers(claimsPage.getNumber(), claimsPage.getTotalPages()));
+        model.addAttribute("filterLabel", filterLabel);
         model.addAttribute("activePage", "claims-list");
         model.addAttribute("activeGroup", "claims");
         model.addAttribute("breadcrumbParent", "Claims");
-        model.addAttribute("breadcrumbCurrent", "Danh sách");
+        model.addAttribute("breadcrumbCurrent", filterLabel != null ? filterLabel : "Danh sách");
         return "claims/list";
     }
 

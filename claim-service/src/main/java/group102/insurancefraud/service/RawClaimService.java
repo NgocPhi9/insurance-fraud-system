@@ -20,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -176,6 +175,43 @@ public class RawClaimService {
                 .forEach(c -> merged.put(c.getRawClaimId(), c));
 
         return new java.util.ArrayList<>(merged.values());
+    }
+
+    /** Lọc theo status – dùng cho clickable cards */
+    public Page<ClaimResponse> getClaimsByStatus(ClaimStatus status, int page) {
+        Pageable pageable = PageRequest.of(page, appConfig.getPageSize(), Sort.by(Sort.Direction.DESC, "rawClaimId"));
+        return rawClaimRepository.findByClaimStatus(status, pageable).map(claimMapper::toResponse);
+    }
+
+    /** Lọc theo status + investigator */
+    public Page<ClaimResponse> getClaimsByInvestigatorAndStatus(Long investigatorId, ClaimStatus status, int page) {
+        Pageable pageable = PageRequest.of(page, appConfig.getPageSize(), Sort.by(Sort.Direction.DESC, "rawClaimId"));
+        return rawClaimRepository.findByInvestigator_UserIdAndClaimStatus(investigatorId, status, pageable).map(claimMapper::toResponse);
+    }
+
+    /** Lọc theo status + handler (STAFF) */
+    public Page<ClaimResponse> getClaimsByHandlerAndStatus(Long handlerId, ClaimStatus status, int page) {
+        Pageable pageable = PageRequest.of(page, appConfig.getPageSize(), Sort.by(Sort.Direction.DESC, "rawClaimId"));
+        return rawClaimRepository.findByClaimHandler_UserIdAndClaimStatus(handlerId, status, pageable).map(claimMapper::toResponse);
+    }
+
+    /** Claims quá hạn của investigator (chưa đóng và tạo > overdueDays ngày trước) */
+    public Page<ClaimResponse> getOverdueClaims(Long investigatorId, int overdueDays, int page) {
+        Pageable pageable = PageRequest.of(page, appConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt"));
+        java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusDays(overdueDays);
+        return rawClaimRepository.findOverdueCasesByInvestigator(investigatorId, cutoff, pageable).map(claimMapper::toResponse);
+    }
+
+    /** Claims của staff chưa có điều tra viên */
+    public Page<ClaimResponse> getUnassignedByStaff(Long staffId, int page) {
+        Pageable pageable = PageRequest.of(page, appConfig.getPageSize(), Sort.by(Sort.Direction.DESC, "rawClaimId"));
+        return rawClaimRepository.findUnassignedByStaff(staffId, pageable).map(claimMapper::toResponse);
+    }
+
+    /** Claims PENDING toàn hệ thống chưa có điều tra viên (ADMIN) */
+    public Page<ClaimResponse> getUnassignedPending(int page) {
+        Pageable pageable = PageRequest.of(page, appConfig.getPageSize(), Sort.by(Sort.Direction.DESC, "rawClaimId"));
+        return rawClaimRepository.findUnassignedPending(pageable).map(claimMapper::toResponse);
     }
 
     public ClaimResponse updateClaim(Long id, CreateClaimRequest request) {

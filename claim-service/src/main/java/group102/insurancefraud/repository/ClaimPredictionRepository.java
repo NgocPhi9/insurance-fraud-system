@@ -41,7 +41,7 @@ public interface ClaimPredictionRepository extends JpaRepository<ClaimPrediction
     List<Object[]> countRiskBuckets();
 
     // ── INVESTIGATOR extras ───────────────────────────────────────
-    @Query("SELECT COUNT(p) FROM ClaimPrediction p WHERE p.shouldAlert = true AND p.rawClaim.investigator.userId = :userId")
+    @Query("SELECT COUNT(DISTINCT p.rawClaim.rawClaimId) FROM ClaimPrediction p WHERE p.shouldAlert = true AND p.rawClaim.investigator.userId = :userId")
     long countAlertsByInvestigator(@Param("userId") Long userId);
 
     @Query("SELECT COALESCE(AVG(p.riskPercentage), 0) FROM ClaimPrediction p WHERE p.rawClaim.investigator.userId = :userId AND p.riskPercentage IS NOT NULL")
@@ -53,5 +53,14 @@ public interface ClaimPredictionRepository extends JpaRepository<ClaimPrediction
            "SUM(CASE WHEN p.riskPercentage >= 70 THEN 1 ELSE 0 END) " +
            "FROM ClaimPrediction p WHERE p.rawClaim.investigator.userId = :userId AND p.riskPercentage IS NOT NULL")
     List<Object[]> countRiskGroupsByInvestigator(@Param("userId") Long userId);
+
+    @Query("SELECT p.rawClaim.rawClaimId, p.riskPercentage FROM ClaimPrediction p " +
+           "WHERE p.rawClaim.investigator.userId = :userId " +
+           "AND p.rawClaim.claimStatus NOT IN ('APPROVED','REJECTED') " +
+           "ORDER BY p.riskPercentage DESC")
+    List<Object[]> findTopRiskUnprocessedClaims(@Param("userId") Long userId, org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM ClaimPrediction p WHERE p.predictedAt >= :startDate AND p.predictedAt <= :endDate")
+    long countModelsRunByDateRange(@Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
 }
 

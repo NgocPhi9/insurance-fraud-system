@@ -6,7 +6,9 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "RAW_CLAIMS")
@@ -81,6 +83,12 @@ public class RawClaim {
     @OneToMany(mappedBy = "rawClaim", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<ClaimPrediction> predictions;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime resolvedAt;
 
     @Version
     private Long version;

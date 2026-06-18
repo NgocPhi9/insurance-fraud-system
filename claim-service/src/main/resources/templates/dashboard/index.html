@@ -31,26 +31,22 @@
                  ADMIN Dashboard
                  ════════════════════════════════════════ -->
             <th:block th:if="${role == 'ADMIN'}">
-
-                <!-- Row 1: 4 main KPI cards -->
                 <div class="row g-3 mb-3">
                     <div class="col-6 col-md-3">
-                        <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-primary fs-2 fw-bold" th:text="${metrics.totalClaims}">0</div>
-                            <div class="text-muted small mt-1">Tổng số Claims</div>
-                        </div>
+                        <a th:href="@{/claims}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-primary fs-2 fw-bold" th:text="${metrics.totalClaims}">0</div>
+                                <div class="text-muted small mt-1">Tổng số Claims</div>
+                            </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-danger fs-2 fw-bold" th:text="${metrics.totalFraudClaims}">0</div>
-                            <div class="text-muted small mt-1">Claims Gian lận</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-success fs-2 fw-bold" th:text="${metrics.totalUsers}">0</div>
-                            <div class="text-muted small mt-1">Người dùng</div>
-                        </div>
+                        <a th:href="@{/claims(status='REJECTED')}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-danger fs-2 fw-bold" th:text="${metrics.totalFraudClaims}">0</div>
+                                <div class="text-muted small mt-1">Claims Gian lận</div>
+                            </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="card card-body text-center h-100 border-0 shadow-sm">
@@ -59,49 +55,75 @@
                             <div class="text-muted small mt-1">Số tiền ngăn chặn</div>
                         </div>
                     </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-success fs-2 fw-bold"
+                                 th:text="${metrics.avgProcessingTimeDays != null ? #numbers.formatDecimal(metrics.avgProcessingTimeDays, 1, 1) + ' ngày' : 'N/A'}">N/A</div>
+                            <div class="text-muted small mt-1">Thời gian Xử lý TB</div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Row 2: 4 secondary KPI cards -->
                 <div class="row g-3 mb-4">
-                    <div class="col-6 col-md-3">
-                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
-                            <div class="rounded-3 bg-warning bg-opacity-10 p-3 text-warning fs-4">⏳</div>
-                            <div>
-                                <div class="fw-bold fs-5" th:text="${metrics.pendingClaims}">0</div>
-                                <div class="text-muted small">Đang chờ xử lý</div>
+                    <div class="col-md-3">
+                        <a th:href="@{/claims(status='PENDING')}" class="text-decoration-none">
+                            <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3 dashboard-card-link">
+                                <div class="rounded-3 bg-warning bg-opacity-10 p-3 text-warning fs-4">⏳</div>
+                                <div>
+                                    <div class="fw-bold fs-5"><span th:text="${metrics.pendingClaims}">0</span></div>
+                                    <div class="text-muted small">Claims đang Pending</div>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
-                            <div class="rounded-3 bg-danger bg-opacity-10 p-3 text-danger fs-4">🚨</div>
-                            <div>
-                                <div class="fw-bold fs-5" th:text="${metrics.openAlerts}">0</div>
-                                <div class="text-muted small">ML Alerts đang mở</div>
+                    <div class="col-md-3">
+                        <a th:href="@{/claims(unassigned=true)}" class="text-decoration-none">
+                            <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3 dashboard-card-link">
+                                <div class="rounded-3 bg-secondary bg-opacity-10 p-3 text-secondary fs-4">📥</div>
+                                <div>
+                                    <div class="fw-bold fs-5" th:text="${metrics.unassignedClaims}">0</div>
+                                    <div class="text-muted small">Chưa phân công</div>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
-                            <div class="rounded-3 bg-info bg-opacity-10 p-3 text-info fs-4">📋</div>
-                            <div>
-                                <div class="fw-bold fs-5" th:text="${metrics.unassignedClaims}">0</div>
-                                <div class="text-muted small">Chưa giao điều tra</div>
+                    <div class="col-md-3">
+                        <a th:href="@{/fraud-intelligence}" class="text-decoration-none">
+                            <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3 dashboard-card-link">
+                                <div class="rounded-3 bg-info bg-opacity-10 p-3 text-info fs-4">🚨</div>
+                                <div>
+                                    <div class="fw-bold fs-5" th:text="${metrics.suspiciousProviders}">0</div>
+                                    <div class="text-muted small">Nhà cung cấp gian lận</div>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
-                            <div class="rounded-3 bg-primary bg-opacity-10 p-3 text-primary fs-4">🏥</div>
-                            <div>
-                                <div class="fw-bold fs-5" th:text="${metrics.suspiciousProviders}">0</div>
-                                <div class="text-muted small">Providers nghi ngờ</div>
+                    <div class="col-md-3">
+                        <a th:href="@{/fraud-intelligence}" class="text-decoration-none">
+                            <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3 dashboard-card-link">
+                                <div class="rounded-3 bg-danger bg-opacity-10 p-3 text-danger fs-4">🚨</div>
+                                <div>
+                                    <div class="fw-bold fs-5" th:text="${metrics.suspiciousBeneficiaries}">0</div>
+                                    <div class="text-muted small">Người thụ hưởng gian lận</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <div class="card card-body border-0 shadow-sm">
+                            <div class="text-muted small mb-1">Tỷ lệ gian lận (Tháng này so với Tháng trước)</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold fs-5" th:classappend="${metrics.fraudRateThisMonth > metrics.fraudRateLastMonth} ? 'text-danger' : 'text-success'"
+                                      th:text="${metrics.fraudRateThisMonth != null ? #numbers.formatDecimal(metrics.fraudRateThisMonth * 100, 1, 1) + '%' : '0%'}">0%</span>
+                                <span class="small text-muted" th:text="${'(Tháng trước: ' + (metrics.fraudRateLastMonth != null ? #numbers.formatDecimal(metrics.fraudRateLastMonth * 100, 1, 1) + '%' : '0%') + ')'}"></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Row 3: Timeline chart + Status donut -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-8">
                         <div class="card h-100 border-0 shadow-sm">
@@ -121,9 +143,16 @@
                     </div>
                 </div>
 
-                <!-- Row 4: Top fraud providers + Risk score distribution -->
-                <div class="row g-3">
-                    <div class="col-md-6">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">📉 Gian lận theo tháng</div>
+                            <div class="card-body">
+                                <div id="fraudTimelineChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-header fw-bold bg-white border-0 pt-3">🏆 Top 5 Providers Gian lận</div>
                             <div class="card-body">
@@ -131,7 +160,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-header fw-bold bg-white border-0 pt-3">📊 Phân bổ Risk Score (ML)</div>
                             <div class="card-body">
@@ -141,32 +170,38 @@
                     </div>
                 </div>
 
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">🌟 Top Features Quan trọng Nhất Toàn Hệ Thống</div>
+                            <div class="card-body">
+                                <div id="topImportantFeaturesChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </th:block>
 
             <!-- ════════════════════════════════════════
                  INVESTIGATOR Dashboard
                  ════════════════════════════════════════ -->
             <th:block th:if="${role == 'INVESTIGATOR'}">
-
-                <!-- Row 1: Main KPI cards -->
                 <div class="row g-3 mb-3">
                     <div class="col-6 col-md-3">
-                        <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-primary fs-2 fw-bold" th:text="${metrics.claimsAssigned}">0</div>
-                            <div class="text-muted small mt-1">Hồ sơ được Giao</div>
-                        </div>
+                        <a th:href="@{/claims(status='UNDER_REVIEW')}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-primary fs-2 fw-bold" th:text="${metrics.claimsPendingReview}">0</div>
+                                <div class="text-muted small mt-1">Đang điều tra (Của tôi)</div>
+                            </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-info fs-2 fw-bold" th:text="${metrics.claimsPendingReview}">0</div>
-                            <div class="text-muted small mt-1">Đang chờ Xử lý</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-danger fs-2 fw-bold" th:text="${metrics.fraudIdentified}">0</div>
-                            <div class="text-muted small mt-1">Gian lận Phát hiện</div>
-                        </div>
+                        <a th:href="@{/claims(overdue=true)}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link" th:classappend="${metrics.overdueCases > 0} ? 'border border-danger border-2' : ''">
+                                <div class="text-danger fs-2 fw-bold" th:text="${metrics.overdueCases}">0</div>
+                                <div class="text-muted small mt-1">Case Quá hạn (>7 ngày)</div>
+                            </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="card card-body text-center h-100 border-0 shadow-sm">
@@ -175,36 +210,65 @@
                             <div class="text-muted small mt-1">Trung bình Risk Score</div>
                         </div>
                     </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-success fs-2 fw-bold"
+                                 th:text="${metrics.fraudConfirmationRate != null ? #numbers.formatDecimal(metrics.fraudConfirmationRate * 100, 1, 1) + '%' : '0%'}">0%</div>
+                            <div class="text-muted small mt-1">Tỷ lệ xác nhận Fraud</div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Row 2: Alert card -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-4">
+                        <a th:href="@{/claims/my-claims}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-secondary fs-2 fw-bold" th:text="${metrics.claimsAssigned}">0</div>
+                                <div class="text-muted small mt-1">Tổng case được phân công</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <a th:href="@{/claims(status='REJECTED')}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-danger fs-2 fw-bold" th:text="${metrics.fraudIdentified}">0</div>
+                                <div class="text-muted small mt-1">Gian lận phát hiện</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-warning fs-2 fw-bold" th:text="${metrics.alertsAssigned}">0</div>
+                            <div class="text-muted small mt-1">Alerts được giao</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3"
-                             th:classappend="${metrics.alertsAssigned > 0} ? 'border-start border-danger border-3' : ''">
-                            <div class="rounded-3 bg-danger bg-opacity-10 p-3 text-danger fs-4">🚨</div>
-                            <div>
-                                <div class="fw-bold fs-5" th:text="${metrics.alertsAssigned}">0</div>
-                                <div class="text-muted small">Claims cần Alert</div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">⚠️ Top 5 Claims Rủi ro cao chưa xử lý</div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center" th:each="claim : ${metrics.topRiskUnprocessedClaims}">
+                                        <span>Claim ID: <a th:href="@{/claims/{id}(id=${claim.key})}" class="fw-bold" th:text="${claim.key}"></a></span>
+                                        <span class="badge bg-danger rounded-pill" th:text="${#numbers.formatDecimal(claim.value, 1, 1) + '% Risk'}"></span>
+                                    </li>
+                                    <li class="list-group-item text-center text-muted" th:if="${#lists.isEmpty(metrics.topRiskUnprocessedClaims)}">Không có claim nào.</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-8">
-                        <div class="card card-body h-100 border-0 shadow-sm">
-                            <div class="text-muted small mb-1">Tỷ lệ phát hiện gian lận</div>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="progress flex-grow-1" style="height:10px;">
-                                    <div class="progress-bar bg-danger"
-                                         th:style="${metrics.claimsAssigned > 0 ? 'width:' + (metrics.fraudIdentified * 100 / metrics.claimsAssigned) + '%' : 'width:0%'}"></div>
-                                </div>
-                                <span class="fw-bold text-danger"
-                                      th:text="${metrics.claimsAssigned > 0 ? #numbers.formatDecimal(metrics.fraudIdentified * 100.0 / metrics.claimsAssigned, 1, 1) + '%' : '0%'}">0%</span>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">⚠️ Phân bổ Mức độ Rủi ro (ML)</div>
+                            <div class="card-body">
+                                <div id="riskGroupChart"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Row 3: Timeline + Status donut -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-8">
                         <div class="card h-100 border-0 shadow-sm">
@@ -224,85 +288,100 @@
                     </div>
                 </div>
 
-                <!-- Row 4: Risk groups radial chart -->
                 <div class="row g-3">
-                    <div class="col-md-12">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-header fw-bold bg-white border-0 pt-3">⚠️ Phân bổ Mức độ Rủi ro (ML)</div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">🌟 SHAP Features Hay Bị Gắn Cờ Nhất (Theo Tần Suất)</div>
                             <div class="card-body">
-                                <div id="riskGroupChart"></div>
+                                <div id="shapFreqChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-header fw-bold bg-white border-0 pt-3">🌟 SHAP Features Tác Động Cao Nhất (Theo Impact)</div>
+                            <div class="card-body">
+                                <div id="shapImpactChart"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </th:block>
 
             <!-- ════════════════════════════════════════
                  STAFF Dashboard
                  ════════════════════════════════════════ -->
             <th:block th:if="${role == 'STAFF'}">
-
-                <!-- Row 1: Main KPI cards -->
                 <div class="row g-3 mb-3">
                     <div class="col-6 col-md-3">
                         <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-primary fs-2 fw-bold" th:text="${metrics.claimsCreated}">0</div>
-                            <div class="text-muted small mt-1">Hồ sơ đã Tạo</div>
+                            <div class="text-primary fs-2 fw-bold"><span th:text="${metrics.claimsCreatedToday}">0</span> / <span th:text="${metrics.claimsCreatedThisWeek}">0</span></div>
+                            <div class="text-muted small mt-1">Hồ sơ tạo (Hôm nay/Tuần)</div>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-success fs-2 fw-bold" th:text="${metrics.claimsApproved}">0</div>
-                            <div class="text-muted small mt-1">Đã được Duyệt</div>
-                        </div>
+                        <a th:href="@{/claims(status='PENDING')}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-secondary fs-2 fw-bold" th:text="${metrics.claimsPending}">0</div>
+                                <div class="text-muted small mt-1">Hồ sơ đang Pending</div>
+                            </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-warning fs-2 fw-bold" th:text="${metrics.claimsFlagged}">0</div>
-                            <div class="text-muted small mt-1">Đang bị Cảnh báo</div>
-                        </div>
+                        <a th:href="@{/claims(status='REJECTED')}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-danger fs-2 fw-bold" th:text="${metrics.claimsRejected}">0</div>
+                                <div class="text-muted small mt-1">Hồ sơ bị từ chối</div>
+                            </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="card card-body text-center h-100 border-0 shadow-sm">
                             <div class="text-info fs-2 fw-bold"
                                  th:text="${metrics.totalClaimAmount != null ? '$' + #numbers.formatDecimal(metrics.totalClaimAmount, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</div>
-                            <div class="text-muted small mt-1">Tổng giá trị Claim</div>
+                            <div class="text-muted small mt-1">Tổng tiền bồi thường đang XL</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Row 2: Secondary cards -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3">
-                            <div class="rounded-3 bg-warning bg-opacity-10 p-3 text-warning fs-4">📋</div>
-                            <div>
-                                <div class="fw-bold fs-5" th:text="${metrics.unassignedByStaff}">0</div>
-                                <div class="text-muted small">Chưa giao Điều tra viên</div>
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <a th:href="@{/claims(status='APPROVED')}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-success fs-2 fw-bold" th:text="${metrics.claimsApproved}">0</div>
+                                <div class="text-muted small mt-1">Hồ sơ được duyệt</div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    <div class="col-md-8">
-                        <div class="card card-body h-100 border-0 shadow-sm">
-                            <div class="text-muted small mb-1">Tỷ lệ duyệt claim</div>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="progress flex-grow-1" style="height:10px;">
-                                    <div class="progress-bar bg-success"
-                                         th:style="${metrics.claimsCreated > 0 ? 'width:' + (metrics.claimsApproved * 100 / metrics.claimsCreated) + '%' : 'width:0%'}"></div>
-                                </div>
-                                <span class="fw-bold text-success"
-                                      th:text="${metrics.claimsCreated > 0 ? #numbers.formatDecimal(metrics.claimsApproved * 100.0 / metrics.claimsCreated, 1, 1) + '%' : '0%'}">0%</span>
+                    <div class="col-6 col-md-3">
+                        <a th:href="@{/claims(status='FLAGGED')}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-warning fs-2 fw-bold" th:text="${metrics.claimsFlagged}">0</div>
+                                <div class="text-muted small mt-1">Hồ sơ bị gắn cờ</div>
                             </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a th:href="@{/claims(unassigned=true)}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-danger fs-2 fw-bold" th:text="${metrics.unassignedByStaff}">0</div>
+                                <div class="text-muted small mt-1">Chưa có điều tra viên</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card card-body text-center h-100 border-0 shadow-sm">
+                            <div class="text-success fs-2 fw-bold"
+                                 th:text="${metrics.staffAvgProcessingTimeDays != null ? #numbers.formatDecimal(metrics.staffAvgProcessingTimeDays, 1, 1) + ' ngày' : 'N/A'}">N/A</div>
+                            <div class="text-muted small mt-1">Thời gian xử lý TB</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Row 3: Timeline + Status donut -->
-                <div class="row g-3">
+                <div class="row g-3 mb-3">
                     <div class="col-md-8">
                         <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-header fw-bold bg-white border-0 pt-3">📈 Hoạt động tạo Hồ sơ</div>
+                            <div class="card-header fw-bold bg-white border-0 pt-3">📈 Hoạt động tạo Hồ sơ theo Thời gian</div>
                             <div class="card-body">
                                 <div class="timelineChart"></div>
                             </div>
@@ -317,7 +396,6 @@
                         </div>
                     </div>
                 </div>
-
             </th:block>
 
         </main>
@@ -389,6 +467,23 @@ document.addEventListener("DOMContentLoaded", function() {
         }).render();
     }
 
+    /* ── ADMIN: Fraud Timeline Bar ────────────────────────── */
+    var fraudTimelineEl = document.getElementById('fraudTimelineChart');
+    if (fraudTimelineEl) {
+        var fraudTimeline = [[${metrics.fraudTimeline}]] || [];
+        var ftLabels = fraudTimeline.map(function(p){ return 'Tháng ' + p.date; });
+        var ftCounts = fraudTimeline.map(function(p){ return p.count || 0; });
+        new ApexCharts(fraudTimelineEl, {
+            series: [{ name: 'Gian lận', data: ftCounts }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
+            colors: ['#e63946'],
+            dataLabels: { enabled: false },
+            xaxis: { categories: ftLabels },
+            tooltip: { y: { formatter: function(v){ return v + ' claims'; } } }
+        }).render();
+    }
+
     /* ── ADMIN: Risk Bucket Bar ──────────────────────────── */
     var riskBucketEl = document.getElementById('riskBucketChart');
     if (riskBucketEl) {
@@ -401,6 +496,23 @@ document.addEventListener("DOMContentLoaded", function() {
             dataLabels: { enabled: false },
             xaxis: { categories: ['Thấp (0–25%)', 'Trung bình (25–50%)', 'Cao (50–75%)', 'Rất cao (75–100%)'] },
             tooltip: { y: { formatter: function(v){ return v + ' claims'; } } }
+        }).render();
+    }
+
+    /* ── ADMIN: Top Important Features Bar ────────────────────────── */
+    var topImportantFeaturesEl = document.getElementById('topImportantFeaturesChart');
+    if (topImportantFeaturesEl) {
+        var topImpFeatures = [[${metrics.topImportantFeatures}]] || [];
+        var impLabels = topImpFeatures.map(function(p){ return p.key || 'N/A'; });
+        var impCounts = topImpFeatures.map(function(p){ return p.value ? Number(p.value.toFixed(4)) : 0; });
+        new ApexCharts(topImportantFeaturesEl, {
+            series: [{ name: 'Average SHAP Impact', data: impCounts }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+            colors: ['#f4a261'],
+            dataLabels: { enabled: true },
+            xaxis: { categories: impLabels, labels: { style: { fontSize: '12px' } } },
+            tooltip: { x: { show: true } }
         }).render();
     }
 
@@ -419,10 +531,44 @@ document.addEventListener("DOMContentLoaded", function() {
             plotOptions: { radialBar: { dataLabels: {
                 name: { fontSize: '16px' },
                 value: { fontSize: '14px' },
-                total: { show: true, label: 'Đã quét', formatter: function(){ return total + ' claims'; } }
+                total: { show: true, label: 'Đã phân tích', formatter: function(){ return total + ' claims'; } }
             }}},
             labels: ['Nguy cơ Cao (≥70%)', 'Nguy cơ Trung (40–70%)', 'Nguy cơ Thấp (<40%)'],
             colors: ['#e63946', '#f4a261', '#35ad31']
+        }).render();
+    }
+
+    /* ── INVESTIGATOR: SHAP Features Frequency Bar ────────────────────────── */
+    var shapFreqEl = document.getElementById('shapFreqChart');
+    if (shapFreqEl) {
+        var shapFreqs = [[${metrics.topShapFeaturesByFreq}]] || [];
+        var freqLabels = shapFreqs.map(function(p){ return p.key || 'N/A'; });
+        var freqCounts = shapFreqs.map(function(p){ return p.value || 0; });
+        new ApexCharts(shapFreqEl, {
+            series: [{ name: 'Số lần', data: freqCounts }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+            colors: ['#4361ee'],
+            dataLabels: { enabled: true },
+            xaxis: { categories: freqLabels, labels: { style: { fontSize: '12px' } } },
+            tooltip: { x: { show: true } }
+        }).render();
+    }
+
+    /* ── INVESTIGATOR: SHAP Features Impact Bar ────────────────────────── */
+    var shapImpactEl = document.getElementById('shapImpactChart');
+    if (shapImpactEl) {
+        var shapImpacts = [[${metrics.topShapFeaturesByImpact}]] || [];
+        var impLabels2 = shapImpacts.map(function(p){ return p.key || 'N/A'; });
+        var impCounts2 = shapImpacts.map(function(p){ return p.value ? Number(p.value.toFixed(4)) : 0; });
+        new ApexCharts(shapImpactEl, {
+            series: [{ name: 'Tác động trung bình', data: impCounts2 }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+            colors: ['#e63946'],
+            dataLabels: { enabled: true },
+            xaxis: { categories: impLabels2, labels: { style: { fontSize: '12px' } } },
+            tooltip: { x: { show: true } }
         }).render();
     }
 });

@@ -62,11 +62,11 @@ public interface RawClaimRepository extends JpaRepository<RawClaim, Long> {
     @Query("SELECT r.claimStatus, COUNT(r) FROM RawClaim r WHERE r.investigator.userId = :userId GROUP BY r.claimStatus")
     List<Object[]> countClaimsByStatusForInvestigator(@Param("userId") Long userId);
 
-    @Query("SELECT r.clmFromDt, COUNT(r) FROM RawClaim r WHERE r.clmFromDt >= :startDate GROUP BY r.clmFromDt ORDER BY r.clmFromDt ASC")
-    List<Object[]> countClaimsByDate(@Param("startDate") java.time.LocalDate startDate);
+    @Query("SELECT FUNCTION('DATE', r.createdAt), COUNT(r) FROM RawClaim r WHERE r.createdAt >= :startDate GROUP BY FUNCTION('DATE', r.createdAt) ORDER BY FUNCTION('DATE', r.createdAt) ASC")
+    List<Object[]> countClaimsByDate(@Param("startDate") java.time.LocalDateTime startDate);
 
-    @Query("SELECT r.clmFromDt, COUNT(r) FROM RawClaim r WHERE r.clmFromDt >= :startDate AND r.claimHandler.userId = :userId GROUP BY r.clmFromDt ORDER BY r.clmFromDt ASC")
-    List<Object[]> countClaimsByDateForStaff(@Param("startDate") java.time.LocalDate startDate, @Param("userId") Long userId);
+    @Query("SELECT FUNCTION('DATE', r.createdAt), COUNT(r) FROM RawClaim r WHERE r.createdAt >= :startDate AND r.claimHandler.userId = :userId GROUP BY FUNCTION('DATE', r.createdAt) ORDER BY FUNCTION('DATE', r.createdAt) ASC")
+    List<Object[]> countClaimsByDateForStaff(@Param("startDate") java.time.LocalDateTime startDate, @Param("userId") Long userId);
 
     long countByInvestigator_UserId(Long userId);
     
@@ -89,10 +89,10 @@ public interface RawClaimRepository extends JpaRepository<RawClaim, Long> {
     List<Object[]> findTopFraudProvidersSummary(org.springframework.data.domain.Pageable pageable);
 
     // ── INVESTIGATOR extras ───────────────────────────────────────
-    @Query("SELECT r.clmFromDt, COUNT(r) FROM RawClaim r " +
-           "WHERE r.clmFromDt >= :startDate AND r.investigator.userId = :userId " +
-           "GROUP BY r.clmFromDt ORDER BY r.clmFromDt ASC")
-    List<Object[]> countClaimsByDateForInvestigator(@Param("startDate") java.time.LocalDate startDate,
+    @Query("SELECT FUNCTION('DATE', r.createdAt), COUNT(r) FROM RawClaim r " +
+           "WHERE r.createdAt >= :startDate AND r.investigator.userId = :userId " +
+           "GROUP BY FUNCTION('DATE', r.createdAt) ORDER BY FUNCTION('DATE', r.createdAt) ASC")
+    List<Object[]> countClaimsByDateForInvestigator(@Param("startDate") java.time.LocalDateTime startDate,
                                                      @Param("userId") Long userId);
 
     @Query("SELECT COUNT(r) FROM RawClaim r WHERE r.investigator.userId = :userId AND r.investigator IS NOT NULL " +
@@ -105,5 +105,64 @@ public interface RawClaimRepository extends JpaRepository<RawClaim, Long> {
 
     @Query("SELECT COUNT(r) FROM RawClaim r WHERE r.claimHandler.userId = :userId AND r.investigator IS NULL")
     long countUnassignedByStaff(@Param("userId") Long userId);
-}
 
+    @Query("SELECT COUNT(r) FROM RawClaim r WHERE r.claimHandler.userId = :userId AND r.createdAt >= :startDate AND r.createdAt <= :endDate")
+    long countClaimsCreatedByDateRange(@Param("userId") Long userId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+
+    // Overdue cases: pending review and older than 'days'
+    @Query("SELECT COUNT(r) FROM RawClaim r WHERE r.investigator.userId = :userId " +
+           "AND r.claimStatus NOT IN ('APPROVED','REJECTED') " +
+           "AND r.createdAt < :cutoffDate")
+    long countOverdueCasesByInvestigator(@Param("userId") Long userId, @Param("cutoffDate") java.time.LocalDateTime cutoffDate);
+
+    // Avg processing time (in days)
+    @Query(value = "SELECT AVG(DATEDIFF(resolved_at, created_at)) FROM raw_claims WHERE resolved_at IS NOT NULL AND claim_handler_id = :userId", nativeQuery = true)
+    Double getStaffAvgProcessingTimeDays(@Param("userId") Long userId);
+
+    @Query(value = "SELECT AVG(DATEDIFF(resolved_at, created_at)) FROM raw_claims WHERE resolved_at IS NOT NULL", nativeQuery = true)
+    Double getGlobalAvgProcessingTimeDays();
+
+    @Query("SELECT COUNT(r) FROM RawClaim r WHERE r.createdAt >= :startDate AND r.createdAt <= :endDate")
+    long countClaimsByDateRange(@Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+
+    @Query("SELECT COUNT(r) FROM RawClaim r WHERE r.claimStatus = 'REJECTED' AND r.createdAt >= :startDate AND r.createdAt <= :endDate")
+    long countRejectedClaimsByDateRange(@Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+
+    @Query("SELECT FUNCTION('MONTH', r.createdAt), COUNT(r) FROM RawClaim r WHERE r.claimStatus = 'REJECTED' AND r.createdAt >= :startDate GROUP BY FUNCTION('MONTH', r.createdAt) ORDER BY FUNCTION('MONTH', r.createdAt) ASC")
+    List<Object[]> countFraudClaimsByMonth(@Param("startDate") java.time.LocalDateTime startDate);
+
+    // ── Filter by status (cho clickable cards) ───────────────────
+    org.springframework.data.domain.Page<RawClaim> findByClaimStatus(
+            group102.insurancefraud.enums.ClaimStatus status,
+            org.springframework.data.domain.Pageable pageable);
+
+    org.springframework.data.domain.Page<RawClaim> findByInvestigator_UserIdAndClaimStatus(
+            Long investigatorId,
+            group102.insurancefraud.enums.ClaimStatus status,
+            org.springframework.data.domain.Pageable pageable);
+
+    org.springframework.data.domain.Page<RawClaim> findByClaimHandler_UserIdAndClaimStatus(
+            Long handlerId,
+            group102.insurancefraud.enums.ClaimStatus status,
+            org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT r FROM RawClaim r WHERE r.investigator.userId = :userId " +
+           "AND r.claimStatus NOT IN ('APPROVED','REJECTED') " +
+           "AND r.createdAt < :cutoffDate " +
+           "ORDER BY r.createdAt ASC")
+    org.springframework.data.domain.Page<RawClaim> findOverdueCasesByInvestigator(
+            @Param("userId") Long userId,
+            @Param("cutoffDate") java.time.LocalDateTime cutoffDate,
+            org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT r FROM RawClaim r WHERE r.claimHandler.userId = :userId AND r.investigator IS NULL " +
+           "ORDER BY r.createdAt DESC")
+    org.springframework.data.domain.Page<RawClaim> findUnassignedByStaff(
+            @Param("userId") Long userId,
+            org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT r FROM RawClaim r WHERE r.investigator IS NULL AND r.claimStatus = 'PENDING' " +
+           "ORDER BY r.createdAt DESC")
+    org.springframework.data.domain.Page<RawClaim> findUnassignedPending(
+            org.springframework.data.domain.Pageable pageable);
+}

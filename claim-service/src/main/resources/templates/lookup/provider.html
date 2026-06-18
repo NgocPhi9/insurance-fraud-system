@@ -92,7 +92,7 @@
                     <tr th:each="claim : ${claims}" class="claim-row">
                       <td class="ps-3">
                         <span class="fw-semibold text-primary"
-                          th:text="${claim.clmId} ?: '#' + ${claim.rawClaimId}"></span>
+                          th:text="'#' + ${claim.rawClaimId}"></span>
                       </td>
                       <td th:text="${claim.clmFromDt} ?: '—'"></td>
                       <td th:text="${claim.clmThruDt} ?: '—'"></td>

@@ -27,6 +27,8 @@ spring:
 #    org.springframework.beans.factory: DEBUG
 
 app:
+  dashboard:
+    overdue-days: 7
   investigation:
     max-claims-per-investigator: 3
     page-size: 10
