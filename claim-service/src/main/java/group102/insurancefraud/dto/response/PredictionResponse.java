@@ -21,8 +21,9 @@ public class PredictionResponse {
     private Double riskPercentage;
     private Boolean shouldAlert;
     private String shapSummary;
-    private Integer shapConfidence;
+    private Double shapConfidence;
     private String shapMethod;
     private List<ShapFactorDTO> topFactors;
+    private String modelSelected;
     private LocalDateTime predictedAt;
 }

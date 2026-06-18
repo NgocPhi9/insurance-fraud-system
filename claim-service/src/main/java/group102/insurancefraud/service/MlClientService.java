@@ -26,6 +26,9 @@ public class MlClientService {
                     .retrieve()
                     .bodyToMono(AnomalyResultDTO.class)
                     .block();                          // blocking — phù hợp flow tuần tự
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+            log.error("ML /predict failed: {} - Body: {}", e.getMessage(), e.getResponseBodyAsString());
+            throw new RuntimeException("ML predict service unavailable");
         } catch (Exception e) {
             log.error("ML /predict failed: {}", e.getMessage());
             throw new RuntimeException("ML predict service unavailable");

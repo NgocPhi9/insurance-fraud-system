@@ -39,7 +39,7 @@ public class ClaimPrediction {
     @Column(length = 10000)
     private String shapSummary;
 
-    private Integer shapConfidence;
+    private Double shapConfidence;
 
     private String shapMethod;
 

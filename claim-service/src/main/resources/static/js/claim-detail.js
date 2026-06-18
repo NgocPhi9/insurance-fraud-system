@@ -39,7 +39,7 @@ async function requestPrediction(button) {
 
     if (button) {
         button.disabled = true;
-        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Dang phan tich...';
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang phân tích...';
     }
 
     stopPolling();
@@ -116,13 +116,13 @@ function renderPrediction(data) {
 
     const methodEl = document.getElementById('mlMethod');
     if (methodEl) {
-        methodEl.textContent = data.shapMethod ?? 'SHAP';
+        methodEl.textContent = data.modelSelected ?? data.shapMethod ?? 'SHAP';
     }
 
     const shapFactorsEl = document.getElementById('shapFactors');
     if (shapFactorsEl) {
         shapFactorsEl.innerHTML = (data.topFactors ?? []).map((f, i) => {
-            const isIncrease = f.direction?.includes('increases') || f.direction?.includes('Tăng');
+            const isIncrease = f.direction?.includes('high');
             return `
             <div class="d-flex align-items-center gap-2 mb-2">
                 <span class="badge bg-secondary">${i + 1}</span>

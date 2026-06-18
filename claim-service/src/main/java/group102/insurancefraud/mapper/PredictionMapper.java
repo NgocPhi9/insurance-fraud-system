@@ -25,15 +25,52 @@ public class PredictionMapper {
                 ? null
                 : procedures.getFirst().getIcd9PrcdrCd();
 
+        String icd9DgnsCd1 = rawClaim.getDiagnoses() != null && !rawClaim.getDiagnoses().isEmpty()
+                ? rawClaim.getDiagnoses().getFirst().getIcd9DgnsCd()
+                : null;
+
+        Integer clmFromDt = rawClaim.getClmFromDt() != null
+                ? Integer.parseInt(rawClaim.getClmFromDt().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE))
+                : null;
+        Integer clmThruDt = rawClaim.getClmThruDt() != null
+                ? Integer.parseInt(rawClaim.getClmThruDt().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE))
+                : null;
+        Integer clmAdmsnDt = rawClaim.getClmAdmsnDt() != null
+                ? Integer.parseInt(rawClaim.getClmAdmsnDt().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE))
+                : null;
+        Integer nchBeneDschrgDt = rawClaim.getNchBeneDschrgDt() != null
+                ? Integer.parseInt(rawClaim.getNchBeneDschrgDt().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE))
+                : null;
+
+        Integer segmentInt = null;
+        if (rawClaim.getSegment() != null) {
+            try {
+                segmentInt = Integer.parseInt(rawClaim.getSegment());
+            } catch (NumberFormatException ignored) {}
+        }
+
         return PredictRequest.builder()
+                .desynpufId(rawClaim.getDesynpufId())
+                .clmId(String.valueOf(rawClaim.getRawClaimId()))
+                .segment(segmentInt)
+                .clmFromDt(clmFromDt)
+                .clmThruDt(clmThruDt)
                 .prvdrNum(rawClaim.getPrvdrNum())
+                .clmPmtAmt(rawClaim.getClmPmtAmt())
                 .nchPrmryPyrClmPdAmt(rawClaim.getNchPrmryPyrClmPdAmt())
                 .atPhysnNpi(rawClaim.getAtPhysnNpi())
                 .opPhysnNpi(rawClaim.getOpPhysnNpi())
                 .otPhysnNpi(rawClaim.getOtPhysnNpi())
-                .clmUtlztnDayCnt(rawClaim.getClmUtlztnDayCnt())
+                .clmAdmsnDt(clmAdmsnDt)
                 .admtngIcd9DgnsCd(rawClaim.getAdmtngIcd9DgnsCd())
+                .clmPassThruPerDiemAmt(rawClaim.getClmPassThruPerDiemAmt())
+                .nchBeneIpDdctblAmt(rawClaim.getNchBeneIpDdctblAmt())
+                .nchBenePtaCoinsrncLbltyAm(rawClaim.getNchBenePtaCoinsrncLbltyAm())
+                .nchBeneBloodDdctblLbltyAm(rawClaim.getNchBeneBloodDdctblLbltyAm())
+                .clmUtlztnDayCnt(rawClaim.getClmUtlztnDayCnt())
+                .nchBeneDschrgDt(nchBeneDschrgDt)
                 .clmDrgCd(rawClaim.getClmDrgCd())
+                .icd9DgnsCd1(icd9DgnsCd1)
                 .icd9PrcdrCd1(icd9PrcdrCd1)
                 .build();
     }
@@ -42,7 +79,7 @@ public class PredictionMapper {
     public ClaimPrediction toEntity(AnomalyResultDTO result, RawClaim rawClaim) {
         return ClaimPrediction.builder()
                 .rawClaim(rawClaim)
-                .modelName("IsolationForest")
+                .modelName(result.getModelSelected())
                 .modelVersion("1.0.0")
                 .predictedLabel(result.getPrediction())
                 .anomalyScore(result.getAnomalyScore())
@@ -104,6 +141,7 @@ public class PredictionMapper {
                 .shapMethod(prediction.getShapMethod())
                 .topFactors(factors)
                 .predictedAt(prediction.getPredictedAt())
+                .modelSelected(prediction.getModelName())
                 .build();
     }
 }

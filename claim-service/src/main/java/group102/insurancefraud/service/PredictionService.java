@@ -116,6 +116,9 @@ public class PredictionService {
                 predictionMapper.enrichWithShap(prediction, shapResult);
                 claimPredictionRepository.save(prediction);
 
+                updateClaimStatusAfterML(rawClaim, anomalyResult);
+                rawClaimRepository.save(rawClaim);
+
                 log.info("Batch predict done for claimId: {}", rawClaim.getRawClaimId());
             } catch (Exception e) {
                 log.error("Batch predict failed at index {}: {}", i, e.getMessage());
@@ -142,13 +145,20 @@ public class PredictionService {
     }
 
     private void updateClaimStatusAfterML(RawClaim rawClaim, AnomalyResultDTO result) {
-        if ("ANOMALY".equals(result.getPrediction())) {
-            // ML phát hiện bất thường → FLAGGED, chờ investigator nhận
-            rawClaim.setClaimStatus(ClaimStatus.FLAGGED);
+        ClaimStatus currentStatus = rawClaim.getClaimStatus();
+
+        if (currentStatus == ClaimStatus.PENDING || currentStatus == ClaimStatus.FLAGGED) {
+            if ("ANOMALY".equals(result.getPrediction())) {
+                // ML phát hiện bất thường → FLAGGED, chờ investigator nhận
+                rawClaim.setClaimStatus(ClaimStatus.FLAGGED);
+            } else {
+                // ML cho là bình thường → APPROVED luôn
+                rawClaim.setClaimStatus(ClaimStatus.APPROVED);
+            }
+            rawClaimRepository.save(rawClaim);
         } else {
-            // ML cho là bình thường → APPROVED luôn
-            rawClaim.setClaimStatus(ClaimStatus.APPROVED);
+            log.info("Claim [{}] đang ở trạng thái [{}]. Giữ nguyên trạng thái sau khi phân tích lại.",
+                     rawClaim.getRawClaimId(), currentStatus);
         }
-        rawClaimRepository.save(rawClaim);
     }
 }

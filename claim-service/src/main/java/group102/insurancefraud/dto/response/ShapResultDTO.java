@@ -22,7 +22,7 @@ public class ShapResultDTO {
     private String summary;
 
     @JsonProperty("confidence")
-    private Integer confidence;
+    private Double confidence;
 
     @JsonProperty("method")
     private String method;

@@ -29,6 +29,9 @@ public class AnomalyResultDTO {
     @JsonProperty("provider_id")
     private String providerId;
 
+    @JsonProperty("model_selected")
+    private String modelSelected;
+
     @JsonProperty("timestamp")
     private LocalDateTime timestamp;
 }
