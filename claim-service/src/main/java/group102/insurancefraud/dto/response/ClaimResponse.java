@@ -16,7 +16,6 @@ public class ClaimResponse {
 
     private Long rawClaimId;
     private String desynpufId;
-    private String clmId;
     private String segment;
     private LocalDate clmFromDt;
     private LocalDate clmThruDt;

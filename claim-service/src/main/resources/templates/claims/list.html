@@ -67,7 +67,7 @@
               <table class="table table-hover align-middle mb-0" id="claimsTable">
                 <thead class="table-light">
                   <tr>
-                    <th class="ps-3">Claim ID</th>
+                    <th class="ps-3">Mã hồ sơ</th>
                     <th>Provider</th>
                     <th>Từ ngày</th>
                     <th>Đến ngày</th>
@@ -80,11 +80,11 @@
                 </thead>
                 <tbody>
                   <tr th:each="claim : ${claims}" class="claim-row" th:attr="data-status=${claim.claimStatus},
-                 data-search=${claim.clmId + ' ' + claim.prvdrNum}">
+                 data-search=${claim.rawClaimId + ' ' + claim.prvdrNum}">
 
                     <td class="ps-3">
                       <span class="fw-semibold text-primary"
-                        th:text="${claim.clmId} ?: '#' + ${claim.rawClaimId}"></span>
+                        th:text="'#' + ${claim.rawClaimId}"></span>
                     </td>
                     <td th:text="${claim.prvdrNum} ?: '—'"></td>
                     <td th:text="${claim.clmFromDt} ?: '—'"></td>

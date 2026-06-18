@@ -84,7 +84,7 @@ public class PredictionMapper {
                 : prediction.getShapFactors().stream()
                 .map(f -> {
                     ShapFactorDTO dto = new ShapFactorDTO();
-                    dto.setFeature(f.getFeatureName());
+                    dto.setFeature(group102.insurancefraud.util.FeatureLabelMap.getLabel(f.getFeatureName()));
                     dto.setImpact(f.getShapImpact());
                     dto.setDirection(f.getDirection());
                     dto.setValue(f.getFeatureValue());

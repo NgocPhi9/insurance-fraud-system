@@ -121,21 +121,23 @@ function renderPrediction(data) {
 
     const shapFactorsEl = document.getElementById('shapFactors');
     if (shapFactorsEl) {
-        shapFactorsEl.innerHTML = (data.topFactors ?? []).map((f, i) => `
+        shapFactorsEl.innerHTML = (data.topFactors ?? []).map((f, i) => {
+            const isIncrease = f.direction?.includes('increases') || f.direction?.includes('Tăng');
+            return `
             <div class="d-flex align-items-center gap-2 mb-2">
                 <span class="badge bg-secondary">${i + 1}</span>
                 <div class="flex-grow-1">
                     <div class="small fw-semibold">${f.feature}</div>
                     <div class="text-muted" style="font-size:0.75rem;">
-                        Gia tri: ${f.value} &nbsp;|&nbsp;
-                        Impact: ${f.impact?.toFixed(3)}
+                        Giá trị: ${f.value} &nbsp;|&nbsp;
+                        Ảnh hưởng: ${f.impact?.toFixed(3)}
                     </div>
                 </div>
-                <span class="badge ${f.direction?.includes('increases') ? 'bg-danger' : 'bg-success'}">
-                    ${f.direction?.includes('increases') ? '↑' : '↓'}
+                <span class="badge ${isIncrease ? 'bg-danger' : 'bg-success'}">
+                    ${isIncrease ? '↑' : '↓'}
                 </span>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     if (data.predictedAt) {

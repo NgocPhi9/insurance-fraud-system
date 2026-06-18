@@ -44,7 +44,7 @@ Dự án được chia làm 2 phần chính:
 
 Dịch vụ này sử dụng môi trường ảo (`venv`) của Python và chạy API FastAPI trên cổng `8000`.
 
-1. Clone repo tại https://github.com/imvhp/health-insurance-fraud-detection và đổi tên thư mục thành fraud-ml-service
+1. Clone repo tại https://github.com/imvhp/health-insurance-fraud-detection
 
 2. Tạo môi trường ảo:
 

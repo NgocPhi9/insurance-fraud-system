@@ -20,6 +20,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -34,7 +36,81 @@ public class RawClaimService {
 
     public ClaimResponse createClaim(CreateClaimRequest request, String creatorEmail) {
 
+        // ── VALIDATION NGHIỆP VỤ ────────────────────────────────────────────
+
+        // Quy tắc 1: Ngày xuất viện phải >= ngày nhập viện
+        if (request.getNchBeneDschrgDt() != null && request.getClmAdmsnDt() != null
+                && request.getNchBeneDschrgDt().isBefore(request.getClmAdmsnDt())) {
+            throw new IllegalArgumentException("Ngày xuất viện không được trước ngày nhập viện");
+        }
+
+        // Quy tắc 2: Ngày bắt đầu claim (nếu cung cấp) không được trước ngày nhập viện
+        if (request.getClmFromDt() != null && request.getClmAdmsnDt() != null
+                && request.getClmFromDt().isBefore(request.getClmAdmsnDt())) {
+            throw new IllegalArgumentException("Ngày bắt đầu claim không được trước ngày nhập viện");
+        }
+
+        // Quy tắc 3: Ngày kết thúc claim (nếu cung cấp) không được trước ngày xuất viện
+        if (request.getClmThruDt() != null && request.getNchBeneDschrgDt() != null
+                && request.getClmThruDt().isBefore(request.getNchBeneDschrgDt())) {
+            throw new IllegalArgumentException("Ngày kết thúc claim không được trước ngày xuất viện");
+        }
+
+        // Quy tắc 4: Bác sĩ phẫu thuật và thủ thuật ICD-9 phải đi kèm nhau
+        boolean hasProcedures = request.getProcedures() != null && !request.getProcedures().isEmpty();
+        boolean hasOpPhysnNpi = request.getOpPhysnNpi() != null && !request.getOpPhysnNpi().isBlank();
+        
+        if (hasProcedures && !hasOpPhysnNpi) {
+            throw new IllegalArgumentException("Mã NPI bác sĩ phẫu thuật bắt buộc khi có thủ thuật ICD-9");
+        }
+        if (hasOpPhysnNpi && !hasProcedures) {
+            throw new IllegalArgumentException("Phải nhập ít nhất một thủ thuật ICD-9 khi đã có bác sĩ phẫu thuật");
+        }
+
+        // Quy tắc 5: Số ngày điều trị không được vượt quá thời gian nằm viện thực tế
+        if (request.getClmUtlztnDayCnt() != null
+                && request.getClmAdmsnDt() != null
+                && request.getNchBeneDschrgDt() != null) {
+            long maxDays = ChronoUnit.DAYS.between(
+                    request.getClmAdmsnDt(), request.getNchBeneDschrgDt());
+            if (request.getClmUtlztnDayCnt() > maxDays) {
+                throw new IllegalArgumentException(
+                    "Số ngày điều trị (đang nhập: " + request.getClmUtlztnDayCnt()
+                    + ") không được lớn hơn số ngày nằm viện thực tế (" + maxDays + " ngày)");
+            }
+        }
+
+        // ── MAP VÀ TỰ TÍNH CÁC TRƯỜNG ────────────────────────────────────────
+
         RawClaim claim = claimMapper.toEntity(request);
+
+        // Đảm bảo claimStatus không bị null do @Builder bỏ qua giá trị default của field
+        if (claim.getClaimStatus() == null) {
+            claim.setClaimStatus(group102.insurancefraud.enums.ClaimStatus.PENDING);
+        }
+
+        // Auto-set SEGMENT = "1" nếu không cung cấp
+        if (claim.getSegment() == null || claim.getSegment().isBlank()) {
+            claim.setSegment("1");
+        }
+
+        // Auto-calc CLM_FROM_DT = CLM_ADMSN_DT nếu không cung cấp
+        if (claim.getClmFromDt() == null && claim.getClmAdmsnDt() != null) {
+            claim.setClmFromDt(claim.getClmAdmsnDt());
+        }
+
+        // Auto-calc CLM_THRU_DT = NCH_BENE_DSCHRG_DT nếu không cung cấp
+        if (claim.getClmThruDt() == null && claim.getNchBeneDschrgDt() != null) {
+            claim.setClmThruDt(claim.getNchBeneDschrgDt());
+        }
+
+        // Auto-calc CLM_UTLZTN_DAY_CNT từ khoảng cách nhập-xuất viện nếu không cung cấp
+        if (claim.getClmUtlztnDayCnt() == null
+                && claim.getClmAdmsnDt() != null
+                && claim.getNchBeneDschrgDt() != null) {
+            long days = ChronoUnit.DAYS.between(claim.getClmAdmsnDt(), claim.getNchBeneDschrgDt());
+            claim.setClmUtlztnDayCnt((int) Math.max(days, 1));
+        }
 
         userRepository.findByEmail(creatorEmail)
                 .ifPresent(claim::setClaimHandler);

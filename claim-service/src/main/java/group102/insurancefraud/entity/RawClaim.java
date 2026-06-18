@@ -23,9 +23,6 @@ public class RawClaim {
 
     private String desynpufId;
 
-    @Column(unique = true)
-    private String clmId;
-
     private String segment;
 
     private LocalDate clmFromDt;
@@ -66,6 +63,7 @@ public class RawClaim {
     private User investigator;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private ClaimStatus claimStatus = ClaimStatus.PENDING;
 
     @OneToMany(mappedBy = "rawClaim", cascade = CascadeType.ALL, orphanRemoval = true)

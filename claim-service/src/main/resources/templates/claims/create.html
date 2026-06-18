@@ -15,6 +15,10 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h5 class="fw-bold mb-0">Tạo Claim Mới</h5>
+                    <p class="text-muted small mb-0 mt-1">
+                        Các trường đánh dấu <span class="text-danger">*</span> là bắt buộc.
+                        Hệ thống sẽ tự điền các trường không bắt buộc nếu để trống.
+                    </p>
                 </div>
                 <a th:href="@{/claims}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>Quay lại
@@ -42,25 +46,11 @@
 
                                     <div class="col-sm-6">
                                         <label class="form-label small fw-semibold">
-                                            Mã hồ sơ người thụ hưởng
+                                            Mã hồ sơ người thụ hưởng <span class="text-danger">*</span>
                                         </label>
                                         <input type="text" class="form-control" id="desynpufId"
-                                               placeholder="VD: 00998CA1A65B3C3B">
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <label class="form-label small fw-semibold">
-                                            Mã claim <span class="text-danger">*</span>
-                                        </label>
-                                        <input type="text" class="form-control" id="clmId"
-                                               placeholder="VD: CLM2024001" required>
-                                        <div class="invalid-feedback">Vui lòng nhập mã claim.</div>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <label class="form-label small fw-semibold">Phân đoạn claim</label>
-                                        <input type="text" class="form-control" id="segment"
-                                               placeholder="VD: 1">
+                                               placeholder="VD: 00998CA1A65B3C3B" required>
+                                        <div class="invalid-feedback">Vui lòng nhập mã người thụ hưởng.</div>
                                     </div>
 
                                     <div class="col-sm-6">
@@ -74,37 +64,60 @@
 
                                     <div class="col-sm-6">
                                         <label class="form-label small fw-semibold">
-                                            Ngày bắt đầu claim <span class="text-danger">*</span>
+                                            Ngày nhập viện <span class="text-danger">*</span>
                                         </label>
-                                        <input type="date" class="form-control" id="clmFromDt" required>
-                                        <div class="invalid-feedback">Vui lòng chọn ngày bắt đầu.</div>
+                                        <input type="date" class="form-control" id="clmAdmsnDt" required>
+                                        <div class="invalid-feedback">Vui lòng chọn ngày nhập viện.</div>
                                     </div>
 
                                     <div class="col-sm-6">
                                         <label class="form-label small fw-semibold">
-                                            Ngày kết thúc claim <span class="text-danger">*</span>
+                                            Ngày xuất viện <span class="text-danger">*</span>
                                         </label>
-                                        <input type="date" class="form-control" id="clmThruDt" required>
-                                        <div class="invalid-feedback">Ngày kết thúc phải sau ngày bắt đầu.</div>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <label class="form-label small fw-semibold">Ngày nhập viện</label>
-                                        <input type="date" class="form-control" id="clmAdmsnDt">
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <label class="form-label small fw-semibold">Ngày xuất viện</label>
-                                        <input type="date" class="form-control" id="nchBeneDschrgDt">
+                                        <input type="date" class="form-control" id="nchBeneDschrgDt" required>
+                                        <div class="invalid-feedback" id="nchBeneDschrgDtFeedback">
+                                            Vui lòng chọn ngày xuất viện.
+                                        </div>
                                     </div>
 
                                     <div class="col-sm-6">
                                         <label class="form-label small fw-semibold">
-                                            Số ngày sử dụng dịch vụ <span class="text-danger">*</span>
+                                            Ngày bắt đầu claim
+                                        </label>
+                                        <input type="date" class="form-control" id="clmFromDt">
+                                        <div class="invalid-feedback" id="clmFromDtFeedback">
+                                            Ngày bắt đầu claim không được trước ngày nhập viện.
+                                        </div>
+                                        <div class="form-text">
+                                            Mặc định bằng ngày nhập viện nếu để trống.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Ngày kết thúc claim
+                                        </label>
+                                        <input type="date" class="form-control" id="clmThruDt">
+                                        <div class="invalid-feedback" id="clmThruDtFeedback">
+                                            Ngày kết thúc claim không được trước ngày xuất viện.
+                                        </div>
+                                        <div class="form-text">
+                                            Mặc định bằng ngày xuất viện nếu để trống.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Số ngày điều trị
                                         </label>
                                         <input type="number" class="form-control" id="clmUtlztnDayCnt"
-                                               min="0" placeholder="VD: 5" required>
-                                        <div class="invalid-feedback">Vui lòng nhập số ngày.</div>
+                                               min="0" placeholder="VD: 5">
+                                        <div class="invalid-feedback" id="clmUtlztnDayCntFeedback">
+                                            Số ngày điều trị không được vượt quá thời gian nằm viện.
+                                        </div>
+                                        <div class="form-text">
+                                            Tự tính từ ngày nhập − xuất viện nếu để trống.
+                                        </div>
                                     </div>
 
                                     <div class="col-sm-6">
@@ -122,8 +135,8 @@
                                         </label>
                                         <input type="text" class="form-control" id="admtngIcd9DgnsCd"
                                                placeholder="VD: 41401" required>
-                                        <div class="invalid-feedback">Vui lòng nhập mã chẩn đoán nhập viện.</div>
-                                        <div class="form-text">Mã ICD-9 tại thời điểm nhập viện</div>
+                                        <div class="invalid-feedback">Vui lòng nhập mã chẩn đoán.</div>
+                                        <div class="form-text">Mã chẩn đoán ICD-9 tại thời điểm nhập viện.</div>
                                     </div>
 
                                 </div>
@@ -143,26 +156,27 @@
 
                                     <div class="col-sm-6">
                                         <label class="form-label small fw-semibold">
-                                            Số tiền thanh toán claim <span class="text-danger">*</span>
-                                        </label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">$</span>
-                                            <input type="number" class="form-control" id="clmPmtAmt"
-                                                   step="0.01" min="0" placeholder="VD: 8500.00" required>
-                                        </div>
-                                        <div class="invalid-feedback">Vui lòng nhập số tiền.</div>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <label class="form-label small fw-semibold">
-                                            Số tiền bảo hiểm gốc chi trả <span class="text-danger">*</span>
+                                            Số tiền bảo hiểm khác chi trả <span class="text-danger">*</span>
                                         </label>
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
                                             <input type="number" class="form-control" id="nchPrmryPyrClmPdAmt"
-                                                   step="0.01" min="0" placeholder="VD: 0.00" required>
+                                                   step="0.01" min="0" value="0" required>
                                         </div>
-                                        <div class="invalid-feedback">Vui lòng nhập số tiền.</div>
+                                        <div class="invalid-feedback">Vui lòng nhập số tiền (nhập 0 nếu không có).</div>
+                                        <div class="form-text">Khoản bảo hiểm khác (non-Medicare) đã chi trả cho claim này.</div>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold">
+                                            Số tiền Medicare thanh toán <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="clmPmtAmt"
+                                                   step="0.01" min="0" value="0" required>
+                                        </div>
+                                        <div class="invalid-feedback">Vui lòng nhập số tiền (nhập 0 nếu không có).</div>
                                     </div>
 
                                     <div class="col-sm-6">
@@ -170,7 +184,7 @@
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
                                             <input type="number" class="form-control" id="nchBeneIpDdctblAmt"
-                                                   step="0.01" min="0" placeholder="VD: 1068.00">
+                                                   step="0.01" min="0" value="0">
                                         </div>
                                     </div>
 
@@ -179,7 +193,7 @@
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
                                             <input type="number" class="form-control" id="nchBenePtaCoinsrncLbltyAm"
-                                                   step="0.01" min="0" placeholder="VD: 325.00">
+                                                   step="0.01" min="0" value="0">
                                         </div>
                                     </div>
 
@@ -188,16 +202,16 @@
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
                                             <input type="number" class="form-control" id="nchBeneBloodDdctblLbltyAm"
-                                                   step="0.01" min="0" placeholder="VD: 0.00">
+                                                   step="0.01" min="0" value="0">
                                         </div>
                                     </div>
 
                                     <div class="col-sm-6">
-                                        <label class="form-label small fw-semibold">Chi phí mỗi ngày điều trị</label>
+                                        <label class="form-label small fw-semibold">Chi phí lưu trú mỗi ngày</label>
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
                                             <input type="number" class="form-control" id="clmPassThruPerDiemAmt"
-                                                   step="0.01" min="0" placeholder="VD: 1250.00">
+                                                   step="0.01" min="0" value="0">
                                         </div>
                                     </div>
 
@@ -211,7 +225,6 @@
                                 <h6 class="mb-0 fw-semibold">
                                     <i class="bi bi-person-badge me-2 text-info"></i>
                                     Thông tin bác sĩ
-
                                 </h6>
                             </div>
                             <div class="card-body">
@@ -226,19 +239,23 @@
                                     </div>
                                     <div class="col-sm-4">
                                         <label class="form-label small fw-semibold">
-                                            Bác sĩ phẫu thuật (NPI) <span class="text-danger">*</span>
+                                            Bác sĩ phẫu thuật (NPI)
                                         </label>
                                         <input type="text" class="form-control" id="opPhysnNpi"
-                                               placeholder="VD: 1649326637" required>
-                                        <div class="invalid-feedback">Bắt buộc nhập.</div>
+                                               placeholder="VD: 1649326637">
+                                        <div class="invalid-feedback" id="opPhysnNpiFeedback">
+                                            Bắt buộc khi có thủ thuật ICD-9.
+                                        </div>
+                                        <div class="form-text" id="opNpiHint">
+                                            Bắt buộc khi có mã thủ thuật ICD-9.
+                                        </div>
                                     </div>
                                     <div class="col-sm-4">
                                         <label class="form-label small fw-semibold">
-                                            Bác sĩ khác (NPI) <span class="text-danger">*</span>
+                                            Bác sĩ khác (NPI)
                                         </label>
                                         <input type="text" class="form-control" id="otPhysnNpi"
-                                               placeholder="VD: 1346238502" required>
-                                        <div class="invalid-feedback">Bắt buộc nhập.</div>
+                                               placeholder="VD: 1346238502">
                                     </div>
                                 </div>
                             </div>
@@ -275,7 +292,6 @@
                                         <label class="form-label small fw-semibold mb-0">
                                             Mã thủ thuật ICD-9
                                             <span class="text-muted fw-normal" id="procedureCount">(0/6)</span>
-                                            <span class="text-danger">*</span>
                                         </label>
                                         <button type="button" class="btn btn-sm btn-outline-primary"
                                                 onclick="addRow('procedure')" id="addProcedureBtn">
@@ -283,6 +299,12 @@
                                         </button>
                                     </div>
                                     <div id="procedureRows"></div>
+                                    <div class="invalid-feedback" id="procedureFeedback">
+                                        Phải thêm ít nhất một Mã thủ thuật ICD-9 khi đã có Bác sĩ phẫu thuật.
+                                    </div>
+                                    <div class="form-text" id="procedureNote">
+                                        Bắt buộc khi có Bác sĩ phẫu thuật (và ngược lại).
+                                    </div>
                                 </div>
 
                                 <!-- HCPCS: HCPCS_CD_1..45 -->
@@ -324,8 +346,8 @@
                                         <a th:href="@{/claims}" class="btn btn-outline-secondary">Hủy</a>
                                     </div>
                                     <p class="text-muted small mt-3 mb-0">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Sau khi tạo, ML sẽ tự động phân tích và trả kết quả trong vài giây.
+                                        <i class="bi bi-cpu me-1"></i>
+                                        Sau khi tạo, hệ thống ML sẽ tự động phân tích và cập nhật kết quả trong vài giây.
                                     </p>
                                 </div>
                             </div>
@@ -335,19 +357,15 @@
                                 <div class="card-header bg-white border-bottom py-3">
                                     <h6 class="mb-0 fw-semibold">
                                         <i class="bi bi-people me-2 text-secondary"></i>
-                                        Phân công
-                                        <span class="badge bg-light text-muted border ms-1"
-                                              style="font-size:.7rem">Tuỳ chọn</span>
+                                        Phân công điều tra viên
                                     </h6>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted small mb-3">
-                                        Để trống nếu chưa phân công. Investigator có thể tự nhận sau.
-                                    </p>
                                     <div>
                                         <label class="form-label small fw-semibold">ID điều tra viên</label>
                                         <input type="number" class="form-control" id="investigatorId"
                                                placeholder="User ID của điều tra viên">
+                                        <div class="form-text">Để trống nếu chưa phân công. Điều tra viên có thể tự nhận claim sau.</div>
                                     </div>
                                 </div>
                             </div>

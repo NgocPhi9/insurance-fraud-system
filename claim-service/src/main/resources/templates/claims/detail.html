@@ -66,8 +66,8 @@
                                 </span>
                             </div>
                             <div class="ms-auto text-end">
-                                <div class="text-muted small mb-1">Claim ID</div>
-                                <strong th:text="${claim.clmId} ?: '—'"></strong>
+                                <div class="text-muted small mb-1">Mã hồ sơ</div>
+                                <strong th:text="'#' + ${claim.rawClaimId}"></strong>
                             </div>
                         </div>
                     </div>

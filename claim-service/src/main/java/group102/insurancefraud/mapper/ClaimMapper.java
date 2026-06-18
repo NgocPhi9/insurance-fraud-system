@@ -23,7 +23,7 @@ public class ClaimMapper {
 
         RawClaim claim = RawClaim.builder()
                 .desynpufId(request.getDesynpufId())
-                .clmId(request.getClmId())
+                // clmId không nhận từ request — service sẽ tự sinh (xem RawClaimService.createClaim)
                 .segment(request.getSegment())
                 .clmFromDt(request.getClmFromDt())
                 .clmThruDt(request.getClmThruDt())
@@ -44,6 +44,7 @@ public class ClaimMapper {
                 .clmDrgCd(request.getClmDrgCd())
                 .claimStatus(request.getClaimStatus())
                 .build();
+
 
         // Map claimHandler
         if (request.getClaimHandlerId() != null) {
@@ -104,7 +105,6 @@ public class ClaimMapper {
         return ClaimResponse.builder()
                 .rawClaimId(claim.getRawClaimId())
                 .desynpufId(claim.getDesynpufId())
-                .clmId(claim.getClmId())
                 .segment(claim.getSegment())
                 .clmFromDt(claim.getClmFromDt())
                 .clmThruDt(claim.getClmThruDt())

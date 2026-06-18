@@ -6,12 +6,12 @@
     --transition: 0.25s ease;
     /* Custom Bootstrap color palette */
     --bs-primary: #4361ee;   /* Royal Blue */
-    --bs-success: #35ad31;
+    --bs-success: #1f8c1f;
     --bs-danger: #e63946;   /* Coral Red */
     --bs-warning: #f4a261;   /* Light Orange */
     --bs-info: #4895ef;      /* Light Blue */
     --bs-primary-rgb: 67,97,238;
-    --bs-success-rgb: 53, 173, 49;
+    --bs-success-rgb: 31, 140, 31;
     --bs-danger-rgb: 230,57,70;
     --bs-warning-rgb: 244,162,97;
     --bs-info-rgb: 72,149,239;
