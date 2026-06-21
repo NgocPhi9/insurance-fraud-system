@@ -36,33 +36,33 @@
     <div class="d-flex align-items-center gap-2 ms-auto">
 
         <!-- Notification bell -->
-        <div class="dropdown">
-            <button class="btn btn-sm btn-light border-0 position-relative"
-                    data-bs-toggle="dropdown">
-                <i class="bi bi-bell fs-5"></i>
-                <!-- Badge số thông báo -->
-                <span class="position-absolute top-0 start-100 translate-middle
-                             badge rounded-pill bg-danger"
-                      th:if="${alertCount != null and alertCount > 0}"
-                      th:text="${alertCount}">0</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width: 280px;">
-                <li><h6 class="dropdown-header">Cảnh báo gần đây</h6></li>
-                <li><hr class="dropdown-divider my-0"></li>
-                <li>
-                    <span class="dropdown-item text-muted small py-3 text-center">
-                        Không có cảnh báo mới
-                    </span>
-                </li>
-                <li><hr class="dropdown-divider my-0"></li>
-                <li>
-                    <a th:href="@{/predictions/alerts}"
-                       class="dropdown-item text-center small text-primary">
-                        Xem tất cả
-                    </a>
-                </li>
-            </ul>
-        </div>
+<!--        <div class="dropdown">-->
+<!--            <button class="btn btn-sm btn-light border-0 position-relative"-->
+<!--                    data-bs-toggle="dropdown">-->
+<!--                <i class="bi bi-bell fs-5"></i>-->
+<!--                &lt;!&ndash; Badge số thông báo &ndash;&gt;-->
+<!--                <span class="position-absolute top-0 start-100 translate-middle-->
+<!--                             badge rounded-pill bg-danger"-->
+<!--                      th:if="${alertCount != null and alertCount > 0}"-->
+<!--                      th:text="${alertCount}">0</span>-->
+<!--            </button>-->
+<!--&lt;!&ndash;            <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width: 280px;">&ndash;&gt;-->
+<!--&lt;!&ndash;                <li><h6 class="dropdown-header">Cảnh báo gần đây</h6></li>&ndash;&gt;-->
+<!--&lt;!&ndash;                <li><hr class="dropdown-divider my-0"></li>&ndash;&gt;-->
+<!--&lt;!&ndash;                <li>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <span class="dropdown-item text-muted small py-3 text-center">&ndash;&gt;-->
+<!--&lt;!&ndash;                        Không có cảnh báo mới&ndash;&gt;-->
+<!--&lt;!&ndash;                    </span>&ndash;&gt;-->
+<!--&lt;!&ndash;                </li>&ndash;&gt;-->
+<!--&lt;!&ndash;                <li><hr class="dropdown-divider my-0"></li>&ndash;&gt;-->
+<!--&lt;!&ndash;                <li>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <a th:href="@{/predictions/alerts}"&ndash;&gt;-->
+<!--&lt;!&ndash;                       class="dropdown-item text-center small text-primary">&ndash;&gt;-->
+<!--&lt;!&ndash;                        Xem tất cả&ndash;&gt;-->
+<!--&lt;!&ndash;                    </a>&ndash;&gt;-->
+<!--&lt;!&ndash;                </li>&ndash;&gt;-->
+<!--&lt;!&ndash;            </ul>&ndash;&gt;-->
+<!--        </div>-->
 
         <!-- User dropdown -->
         <div class="dropdown">

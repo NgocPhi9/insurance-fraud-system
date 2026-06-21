@@ -178,8 +178,8 @@
                                                 <span class="badge"
                                                       th:classappend="${row.claimStatus == 'REJECTED'} ? 'bg-danger'
                                                                     : (${row.claimStatus == 'APPROVED'} ? 'bg-success'
-                                                                    : (${row.claimStatus == 'FLAGGED'} ? 'bg-warning text-dark'
-                                                                    : (${row.claimStatus == 'UNDER_REVIEW'} ? 'bg-info text-dark'
+                                                                    : (${row.claimStatus == 'FLAGGED'} ? 'bg-warning'
+                                                                    : (${row.claimStatus == 'UNDER_REVIEW'} ? 'bg-info'
                                                                     : 'bg-secondary')))"
                                                       th:text="${row.claimStatus}"></span>
                                             </td>
@@ -218,7 +218,7 @@
                              id="pane-fraud" role="tabpanel">
                             <div class="d-flex justify-content-end p-3 border-bottom">
                                 <a th:href="@{/reports/export(type='FRAUD', from=${fromDate}, to=${toDate})}"
-                                   class="btn btn-sm btn-outline-success">
+                                   class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-file-earmark-excel me-1"></i> Xuất tab này
                                 </a>
                             </div>
@@ -287,7 +287,7 @@
                              id="pane-staff" role="tabpanel">
                             <div class="d-flex justify-content-end p-3 border-bottom">
                                 <a th:href="@{/reports/export(type='STAFF_PERFORMANCE', from=${fromDate}, to=${toDate})}"
-                                   class="btn btn-sm btn-outline-success">
+                                   class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-file-earmark-excel me-1"></i> Xuất tab này
                                 </a>
                             </div>
@@ -314,7 +314,7 @@
                                             <td>
                                                 <span class="badge"
                                                       th:classappend="${row.role == 'ADMIN'} ? 'bg-danger'
-                                                                    : (${row.role == 'INVESTIGATOR'} ? 'bg-primary text-dark'
+                                                                    : (${row.role == 'INVESTIGATOR'} ? 'bg-primary'
                                                                     : 'bg-success')"
                                                       th:text="${row.role}"></span>
                                             </td>
