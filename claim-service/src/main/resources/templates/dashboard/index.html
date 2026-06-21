@@ -66,12 +66,12 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
-                        <a th:href="@{/claims(status='PENDING')}" class="text-decoration-none">
+                        <a th:href="@{/claims(status='UNDER_REVIEW')}" class="text-decoration-none">
                             <div class="card card-body h-100 border-0 shadow-sm d-flex flex-row align-items-center gap-3 dashboard-card-link">
                                 <div class="rounded-3 bg-warning bg-opacity-10 p-3 text-warning fs-4">⏳</div>
                                 <div>
                                     <div class="fw-bold fs-5"><span th:text="${metrics.pendingClaims}">0</span></div>
-                                    <div class="text-muted small">Claims đang Pending</div>
+                                    <div class="text-muted small">Claims đang Under Review</div>
                                 </div>
                             </div>
                         </a>
@@ -111,14 +111,31 @@
                     </div>
                 </div>
 
+                <!-- ── Link sang trang Báo cáo ── -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-12">
-                        <div class="card card-body border-0 shadow-sm">
-                            <div class="text-muted small mb-1">Tỷ lệ gian lận (Tháng này so với Tháng trước)</div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="fw-bold fs-5" th:classappend="${metrics.fraudRateThisMonth > metrics.fraudRateLastMonth} ? 'text-danger' : 'text-success'"
-                                      th:text="${metrics.fraudRateThisMonth != null ? #numbers.formatDecimal(metrics.fraudRateThisMonth * 100, 1, 1) + '%' : '0%'}">0%</span>
-                                <span class="small text-muted" th:text="${'(Tháng trước: ' + (metrics.fraudRateLastMonth != null ? #numbers.formatDecimal(metrics.fraudRateLastMonth * 100, 1, 1) + '%' : '0%') + ')'}"></span>
+                        <div class="card border-0 shadow-sm bg-secondary bg-gradient">
+                            <div class="card-body p-2 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div class="text-white">
+                                    <div class="fw-bold fs-6 mb-1">
+                                        <i class="bi bi-file-earmark-bar-graph me-2 text-light"></i>
+                                        Báo cáo chi tiết & Xuất Excel
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a th:href="@{/reports(tab='STAFF_PERFORMANCE')}"
+                                       class="btn btn-sm btn-outline-light">
+                                        <i class="bi bi-people me-1"></i> Hiệu suất NV
+                                    </a>
+                                    <a th:href="@{/reports(tab='FRAUD')}"
+                                       class="btn btn-sm btn-outline-light">
+                                        <i class="bi bi-shield-exclamation me-1"></i> Báo cáo Gian lận
+                                    </a>
+                                    <a th:href="@{/reports}"
+                                       class="btn btn-sm btn-light fw-semibold">
+                                        <i class="bi bi-file-earmark-excel-fill me-1"></i> Xem & Xuất Excel
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -237,10 +254,12 @@
                         </a>
                     </div>
                     <div class="col-6 col-md-4">
-                        <div class="card card-body text-center h-100 border-0 shadow-sm">
-                            <div class="text-warning fs-2 fw-bold" th:text="${metrics.alertsAssigned}">0</div>
-                            <div class="text-muted small mt-1">Alerts được giao</div>
-                        </div>
+                        <a th:href="@{/claims(hasAlert=true)}" class="text-decoration-none">
+                            <div class="card card-body text-center h-100 border-0 shadow-sm dashboard-card-link">
+                                <div class="text-warning fs-2 fw-bold" th:text="${metrics.alertsAssigned}">0</div>
+                                <div class="text-muted small mt-1">Alerts được giao</div>
+                            </div>
+                        </a>
                     </div>
                 </div>
 
@@ -430,7 +449,7 @@ document.addEventListener("DOMContentLoaded", function() {
             chart: { type: 'donut', height: 300 },
             labels: statusLabels,
             colors: statusColors,
-            plotOptions: { pie: { donut: { size: '65%' } } },
+            plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, showAlways: true, label: 'Tổng số' } } } } },
             dataLabels: { enabled: false },
             legend: { position: 'bottom' }
         }).render();
@@ -476,8 +495,8 @@ document.addEventListener("DOMContentLoaded", function() {
         new ApexCharts(fraudTimelineEl, {
             series: [{ name: 'Gian lận', data: ftCounts }],
             chart: { type: 'bar', height: 300, toolbar: { show: false } },
-            plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
-            colors: ['#e63946'],
+            plotOptions: { bar: { borderRadius: 4, columnWidth: ftCounts.length <= 1 ? '50px' : '55%' } },
+            colors: ['#F2DB07'],
             dataLabels: { enabled: false },
             xaxis: { categories: ftLabels },
             tooltip: { y: { formatter: function(v){ return v + ' claims'; } } }

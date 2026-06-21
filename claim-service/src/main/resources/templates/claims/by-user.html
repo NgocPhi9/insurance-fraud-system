@@ -97,12 +97,12 @@
                   <tr th:each="claim : ${claims}"
                       class="claim-row"
                       th:attr="data-status=${claim.claimStatus},
-                               data-search=${claim.clmId + ' ' + claim.prvdrNum}">
+                               data-search=${claim.rawClaimId + ' ' + claim.prvdrNum}">
 
                     <!-- Claim ID -->
                     <td class="ps-3">
                       <span class="fw-semibold text-primary"
-                            th:text="${claim.clmId} ?: '#' + ${claim.rawClaimId}"></span>
+                            th:text="${claim.rawClaimId}"></span>
                     </td>
 
                     <!-- Provider -->

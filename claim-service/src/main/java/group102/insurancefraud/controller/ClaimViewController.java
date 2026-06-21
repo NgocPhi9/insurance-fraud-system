@@ -35,13 +35,17 @@ public class ClaimViewController extends BaseController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false, defaultValue = "false") boolean overdue,
             @RequestParam(required = false, defaultValue = "false") boolean unassigned,
+            @RequestParam(required = false, defaultValue = "false") boolean hasAlert,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             Model model) {
 
         Page<ClaimResponse> claimsPage;
         String filterLabel = null;
 
-        if (overdue && "INVESTIGATOR".equals(userDetails.getUser().getRole())) {
+        if (hasAlert && "INVESTIGATOR".equals(userDetails.getUser().getRole())) {
+            claimsPage = rawClaimService.getAlertClaimsByInvestigator(userDetails.getUserId(), page);
+            filterLabel = "Alerts được giao";
+        } else if (overdue && "INVESTIGATOR".equals(userDetails.getUser().getRole())) {
             claimsPage = rawClaimService.getOverdueClaims(userDetails.getUserId(), 7, page);
             filterLabel = "Case quá hạn (> 7 ngày)";
         } else if (unassigned && "STAFF".equals(userDetails.getUser().getRole())) {

@@ -7,6 +7,7 @@ import group102.insurancefraud.repository.ClaimPredictionRepository;
 import group102.insurancefraud.repository.ClaimShapFactorRepository;
 import group102.insurancefraud.repository.RawClaimRepository;
 import group102.insurancefraud.repository.UserRepository;
+import group102.insurancefraud.util.FeatureLabelMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -43,21 +44,21 @@ public class DashboardService {
 
         if ("ADMIN".equalsIgnoreCase(user.getRole())) {
             // ── Stat cards ────────────────────────────────────────
-            long total = rawClaimRepository.count();
-            long fraud = rawClaimRepository.countTotalRejectedClaims();
+            long total = rawClaimRepository.countByCreatedAtGreaterThanEqual(startDate);
+            long fraud = rawClaimRepository.countTotalRejectedClaimsSince(startDate);
             builder.totalUsers(userRepository.count())
                    .totalClaims(total)
                    .totalFraudClaims(fraud)
-                   .totalAmountPrevented(rawClaimRepository.sumTotalRejectedAmount())
-                   .pendingClaims(rawClaimRepository.countPendingClaims())
-                   .unassignedClaims(rawClaimRepository.countUnassignedClaims())
-                   .suspiciousBeneficiaries(rawClaimRepository.countUniqueFraudulentBeneficiaries())
-                   .suspiciousProviders(rawClaimRepository.countUniqueFraudulentProviders());
+                   .totalAmountPrevented(rawClaimRepository.sumTotalRejectedAmountSince(startDate))
+                   .pendingClaims(rawClaimRepository.countPendingClaimsSince(startDate))
+                   .unassignedClaims(rawClaimRepository.countUnassignedClaimsSince(startDate))
+                   .suspiciousBeneficiaries(rawClaimRepository.countUniqueFraudulentBeneficiariesSince(startDate))
+                   .suspiciousProviders(rawClaimRepository.countUniqueFraudulentProvidersSince(startDate));
 
             // New Admin metrics
             builder.modelsRunToday(predictionRepository.countModelsRunByDateRange(startOfDay, now))
                    .modelsRunThisWeek(predictionRepository.countModelsRunByDateRange(startOfWeek, now))
-                   .avgProcessingTimeDays(rawClaimRepository.getGlobalAvgProcessingTimeDays());
+                   .avgProcessingTimeDays(rawClaimRepository.getGlobalAvgProcessingTimeDaysSince(startDate));
 
             long claimsThisMonth = rawClaimRepository.countClaimsByDateRange(startOfMonth, now);
             long fraudThisMonth = rawClaimRepository.countRejectedClaimsByDateRange(startOfMonth, now);
@@ -66,78 +67,78 @@ public class DashboardService {
             
             builder.fraudRateThisMonth(claimsThisMonth > 0 ? (double) fraudThisMonth / claimsThisMonth : 0.0)
                    .fraudRateLastMonth(claimsLastMonth > 0 ? (double) fraudLastMonth / claimsLastMonth : 0.0)
-                   .fraudTimeline(mapTimeline(rawClaimRepository.countFraudClaimsByMonth(startOfMonth.minusMonths(11)))) // Last 12 months
-                   .topImportantFeatures(mapKeyValueDouble(shapFactorRepository.findTopFeaturesByImpact(PageRequest.of(0, 10))));
+                   .fraudTimeline(mapTimeline(rawClaimRepository.countFraudClaimsByMonth(startDate))) // Filter timeline by startDate
+                   .topImportantFeatures(mapKeyValueDoubleFeatureLabel(shapFactorRepository.findTopFeaturesByImpactSince(startDate, PageRequest.of(0, 10))));
 
             // ── Charts ─────────────────────────────────────────────
-            builder.statusDistribution(mapStatusDistribution(rawClaimRepository.countClaimsByStatus()));
+            builder.statusDistribution(mapStatusDistribution(rawClaimRepository.countClaimsByStatusSince(startDate)));
             builder.claimsTimeline(mapTimeline(rawClaimRepository.countClaimsByDate(startDate)));
 
             // Top 5 fraud providers
-            List<Object[]> providerRaw = rawClaimRepository.findTopFraudProvidersSummary(PageRequest.of(0, 5));
+            List<Object[]> providerRaw = rawClaimRepository.findTopFraudProvidersSummarySince(startDate, PageRequest.of(0, 5));
             builder.topFraudProviders(mapKeyValue(providerRaw));
 
             // Risk score buckets [0-25, 25-50, 50-75, 75-100]
-            List<Object[]> buckets = predictionRepository.countRiskBuckets();
+            List<Object[]> buckets = predictionRepository.countRiskBucketsSince(startDate);
             builder.riskBuckets(flattenSingleRowAggregates(buckets));
 
         } else if ("INVESTIGATOR".equalsIgnoreCase(user.getRole())) {
             Long userId = user.getUserId();
 
             // ── Stat cards ────────────────────────────────────────
-            long assigned = rawClaimRepository.countByInvestigator_UserId(userId);
-            long fraudFound = rawClaimRepository.countByInvestigator_UserIdAndClaimStatus(userId, ClaimStatus.REJECTED);
-            Double avgRisk = predictionRepository.avgRiskByInvestigator(userId);
+            long assigned = rawClaimRepository.countByInvestigator_UserIdAndCreatedAtGreaterThanEqual(userId, startDate);
+            long fraudFound = rawClaimRepository.countByInvestigator_UserIdAndClaimStatusAndCreatedAtGreaterThanEqual(userId, ClaimStatus.REJECTED, startDate);
+            Double avgRisk = predictionRepository.avgRiskByInvestigatorSince(userId, startDate);
 
             builder.claimsAssigned(assigned)
-                   .claimsPendingReview(rawClaimRepository.countActiveClaimsByInvestigator(userId))
+                   .claimsPendingReview(rawClaimRepository.countActiveClaimsByInvestigatorSince(userId, startDate))
                    .fraudIdentified(fraudFound)
-                   .alertsAssigned(predictionRepository.countAlertsByInvestigator(userId))
+                   .alertsAssigned(predictionRepository.countAlertsByInvestigatorSince(userId, startDate))
                    .avgRiskScore(avgRisk != null ? Math.round(avgRisk * 10.0) / 10.0 : 0.0);
 
             // New Investigator metrics
             builder.overdueCases(rawClaimRepository.countOverdueCasesByInvestigator(userId, now.minusDays(overdueDays)));
             
-            long approved = rawClaimRepository.countByInvestigator_UserIdAndClaimStatus(userId, ClaimStatus.APPROVED);
+            long approved = rawClaimRepository.countByInvestigator_UserIdAndClaimStatusAndCreatedAtGreaterThanEqual(userId, ClaimStatus.APPROVED, startDate);
             long closedCases = approved + fraudFound;
             builder.fraudConfirmationRate(closedCases > 0 ? (double) fraudFound / closedCases : 0.0);
             
-            builder.topRiskUnprocessedClaims(mapKeyValueDouble(predictionRepository.findTopRiskUnprocessedClaims(userId, PageRequest.of(0, 5))));
-            builder.topShapFeaturesByFreq(mapKeyValue(shapFactorRepository.findTopFeaturesByFrequencyForInvestigator(userId, PageRequest.of(0, 5))));
-            builder.topShapFeaturesByImpact(mapKeyValueDouble(shapFactorRepository.findTopFeaturesByImpactForInvestigator(userId, PageRequest.of(0, 5))));
+            builder.topRiskUnprocessedClaims(mapKeyValueDouble(predictionRepository.findTopRiskUnprocessedClaimsSince(userId, startDate, PageRequest.of(0, 5))));
+            builder.topShapFeaturesByFreq(mapKeyValueFeatureLabel(shapFactorRepository.findTopFeaturesByFrequencyForInvestigatorSince(userId, startDate, PageRequest.of(0, 5))));
+            builder.topShapFeaturesByImpact(mapKeyValueDoubleFeatureLabel(shapFactorRepository.findTopFeaturesByImpactForInvestigatorSince(userId, startDate, PageRequest.of(0, 5))));
 
             // ── Charts ─────────────────────────────────────────────
-            builder.statusDistribution(mapStatusDistribution(rawClaimRepository.countClaimsByStatusForInvestigator(userId)));
+            builder.statusDistribution(mapStatusDistribution(rawClaimRepository.countClaimsByStatusForInvestigatorSince(userId, startDate)));
             builder.claimsTimeline(mapTimeline(rawClaimRepository.countClaimsByDateForInvestigator(startDate, userId)));
 
             // Risk groups [Thấp, Trung, Cao]
-            List<Object[]> groups = predictionRepository.countRiskGroupsByInvestigator(userId);
+            List<Object[]> groups = predictionRepository.countRiskGroupsByInvestigatorSince(userId, startDate);
             builder.riskGroups(flattenSingleRowAggregates(groups));
 
         } else if ("STAFF".equalsIgnoreCase(user.getRole())) {
             Long userId = user.getUserId();
 
             // ── Stat cards ────────────────────────────────────────
-            long created = rawClaimRepository.countByClaimHandler_UserId(userId);
-            long approved = rawClaimRepository.countByClaimHandler_UserIdAndClaimStatus(userId, ClaimStatus.APPROVED);
-            long flagged = rawClaimRepository.countByClaimHandler_UserIdAndClaimStatus(userId, ClaimStatus.FLAGGED);
-            long rejected = rawClaimRepository.countByClaimHandler_UserIdAndClaimStatus(userId, ClaimStatus.REJECTED);
+            long created = rawClaimRepository.countByClaimHandler_UserIdAndCreatedAtGreaterThanEqual(userId, startDate);
+            long approved = rawClaimRepository.countByClaimHandler_UserIdAndClaimStatusAndCreatedAtGreaterThanEqual(userId, ClaimStatus.APPROVED, startDate);
+            long flagged = rawClaimRepository.countByClaimHandler_UserIdAndClaimStatusAndCreatedAtGreaterThanEqual(userId, ClaimStatus.FLAGGED, startDate);
+            long rejected = rawClaimRepository.countByClaimHandler_UserIdAndClaimStatusAndCreatedAtGreaterThanEqual(userId, ClaimStatus.REJECTED, startDate);
 
             builder.claimsCreated(created)
                    .claimsApproved(approved)
                    .claimsFlagged(flagged)
-                   .totalClaimAmount(rawClaimRepository.sumClmPmtAmtByStaff(userId))
-                   .unassignedByStaff(rawClaimRepository.countUnassignedByStaff(userId));
+                   .totalClaimAmount(rawClaimRepository.sumClmPmtAmtByStaffSince(userId, startDate))
+                   .unassignedByStaff(rawClaimRepository.countUnassignedByStaffSince(userId, startDate));
 
             // New Staff Metrics
             builder.claimsCreatedToday(rawClaimRepository.countClaimsCreatedByDateRange(userId, startOfDay, now))
                    .claimsCreatedThisWeek(rawClaimRepository.countClaimsCreatedByDateRange(userId, startOfWeek, now))
                    .claimsRejected(rejected)
-                   .claimsPending(rawClaimRepository.countByClaimHandler_UserIdAndClaimStatus(userId, ClaimStatus.PENDING))
-                   .staffAvgProcessingTimeDays(rawClaimRepository.getStaffAvgProcessingTimeDays(userId));
+                   .claimsPending(rawClaimRepository.countByClaimHandler_UserIdAndClaimStatusAndCreatedAtGreaterThanEqual(userId, ClaimStatus.PENDING, startDate))
+                   .staffAvgProcessingTimeDays(rawClaimRepository.getStaffAvgProcessingTimeDaysSince(userId, startDate));
 
             // ── Charts ─────────────────────────────────────────────
-            builder.statusDistribution(mapStatusDistribution(rawClaimRepository.countClaimsByStatusForStaff(userId)));
+            builder.statusDistribution(mapStatusDistribution(rawClaimRepository.countClaimsByStatusForStaffSince(userId, startDate)));
             builder.claimsTimeline(mapTimeline(rawClaimRepository.countClaimsByDateForStaff(startDate, userId)));
         }
 
@@ -168,6 +169,19 @@ public class DashboardService {
         return timeline;
     }
 
+    private List<DashboardMetricsDto.KeyValueData> mapKeyValueFeatureLabel(List<Object[]> rawList) {
+        List<DashboardMetricsDto.KeyValueData> result = new ArrayList<>();
+        for (Object[] obj : rawList) {
+            if (obj[0] != null && obj[1] != null) {
+                result.add(DashboardMetricsDto.KeyValueData.builder()
+                        .key(FeatureLabelMap.getLabel(obj[0].toString()))
+                        .value(((Number) obj[1]).longValue())
+                        .build());
+            }
+        }
+        return result;
+    }
+
     private List<DashboardMetricsDto.KeyValueData> mapKeyValue(List<Object[]> rawList) {
         List<DashboardMetricsDto.KeyValueData> result = new ArrayList<>();
         for (Object[] obj : rawList) {
@@ -175,6 +189,19 @@ public class DashboardService {
                 result.add(DashboardMetricsDto.KeyValueData.builder()
                         .key(obj[0].toString())
                         .value(((Number) obj[1]).longValue())
+                        .build());
+            }
+        }
+        return result;
+    }
+
+    private List<DashboardMetricsDto.KeyValueDataDouble> mapKeyValueDoubleFeatureLabel(List<Object[]> rawList) {
+        List<DashboardMetricsDto.KeyValueDataDouble> result = new ArrayList<>();
+        for (Object[] obj : rawList) {
+            if (obj[0] != null && obj[1] != null) {
+                result.add(DashboardMetricsDto.KeyValueDataDouble.builder()
+                        .key(FeatureLabelMap.getLabel(obj[0].toString()))
+                        .value(((Number) obj[1]).doubleValue())
                         .build());
             }
         }

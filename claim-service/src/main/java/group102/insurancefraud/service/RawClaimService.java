@@ -214,6 +214,12 @@ public class RawClaimService {
         return rawClaimRepository.findUnassignedPending(pageable).map(claimMapper::toResponse);
     }
 
+    /** Alerts được giao cho Investigator */
+    public Page<ClaimResponse> getAlertClaimsByInvestigator(Long investigatorId, int page) {
+        Pageable pageable = PageRequest.of(page, appConfig.getPageSize(), Sort.by(Sort.Direction.DESC, "rawClaim.createdAt"));
+        return rawClaimRepository.findAlertsByInvestigator(investigatorId, pageable).map(claimMapper::toResponse);
+    }
+
     public ClaimResponse updateClaim(Long id, CreateClaimRequest request) {
 
         RawClaim existingClaim = rawClaimRepository.findById(id)

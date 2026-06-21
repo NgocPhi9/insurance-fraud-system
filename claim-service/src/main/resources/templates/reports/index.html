@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Báo cáo Admin')}"></head>
+<body class="bg-light">
+<div class="wrapper d-flex">
+    <div th:replace="~{layout/sidebar :: sidebar}"></div>
+    <div id="sidebarOverlay" class="sidebar-overlay d-none"></div>
+    <div class="main-content d-flex flex-column flex-grow-1">
+        <div th:replace="~{layout/navbar :: navbar}"></div>
+
+        <main class="flex-grow-1 p-4">
+
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4 fw-bold mb-1">📊 Báo cáo Admin</h1>
+                </div>
+                <!-- Export Button -->
+                <div class="d-flex gap-2">
+                    <a id="exportBtn"
+                       th:href="@{/reports/export(type='ALL', from=${fromDate}, to=${toDate})}"
+                       class="btn btn-sm btn-secondary d-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-excel-fill"></i>
+                        <span>Xuất Excel (Tất cả)</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <form id="filterForm" method="get" th:action="@{/reports}"
+                          class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small text-muted">Từ ngày</label>
+                            <input type="date" name="from" class="form-control"
+                                   id="fromDate"
+                                   th:value="${fromDate}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small text-muted">Đến ngày</label>
+                            <input type="date" name="to" class="form-control"
+                                   id="toDate"
+                                   th:value="${toDate}">
+                        </div>
+                        <input type="hidden" name="tab" th:value="${activeTab}">
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search me-1"></i> Lọc
+                            </button>
+                        </div>
+                        <div class="col-md-auto ms-auto text-muted small d-flex align-items-end">
+                            <span>Dữ liệu từ <strong th:text="${#temporals.format(fromDate, 'dd/MM/yyyy')}"></strong>
+                                  đến <strong th:text="${#temporals.format(toDate, 'dd/MM/yyyy')}"></strong></span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="text-primary fs-2 fw-bold" th:text="${totalClaims}">0</div>
+                            <div class="text-muted small mt-1">Tổng Claims</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="text-danger fs-2 fw-bold" th:text="${totalFraud}">0</div>
+                            <div class="text-muted small mt-1">Claims Gian lận</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="text-warning fs-2 fw-bold"
+                                 th:text="${fraudRate + '%'}">0%</div>
+                            <div class="text-muted small mt-1">Tỷ lệ Gian lận</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="text-success fs-2 fw-bold"
+                                 th:text="'$' + ${#numbers.formatDecimal(totalPrevented, 0, 'COMMA', 0, 'POINT')}">$0</div>
+                            <div class="text-muted small mt-1">Số tiền ngăn chặn</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-3 px-3">
+                    <ul class="nav nav-tabs card-header-tabs" id="reportTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link"
+                                    th:classappend="${activeTab == 'CLAIMS'} ? 'active' : ''"
+                                    id="tab-claims" data-bs-toggle="tab" data-bs-target="#pane-claims"
+                                    type="button" role="tab">
+                                <i class="bi bi-file-earmark-text me-1"></i>
+                                Tổng quan Claims
+                                <span class="badge bg-primary ms-1" th:text="${totalClaims}">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link"
+                                    th:classappend="${activeTab == 'FRAUD'} ? 'active' : ''"
+                                    id="tab-fraud" data-bs-toggle="tab" data-bs-target="#pane-fraud"
+                                    type="button" role="tab">
+                                <i class="bi bi-shield-exclamation me-1"></i>
+                                Báo cáo Gian lận
+                                <span class="badge bg-danger ms-1" th:text="${totalFraud}">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link"
+                                    th:classappend="${activeTab == 'STAFF_PERFORMANCE'} ? 'active' : ''"
+                                    id="tab-staff" data-bs-toggle="tab" data-bs-target="#pane-staff"
+                                    type="button" role="tab">
+                                <i class="bi bi-people me-1"></i>
+                                Hiệu suất Nhân viên
+                                <span class="badge bg-secondary ms-1" th:text="${staffData.size()}">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="tab-content" id="reportTabContent">
+
+                        <!-- ── Tab: Tổng quan Claims ── -->
+                        <div class="tab-pane fade"
+                             th:classappend="${activeTab == 'CLAIMS'} ? 'show active' : ''"
+                             id="pane-claims" role="tabpanel">
+                            <div class="d-flex justify-content-end p-3 border-bottom">
+                                <a th:href="@{/reports/export(type='CLAIMS', from=${fromDate}, to=${toDate})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-file-earmark-excel me-1"></i> Xuất tab này
+                                </a>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tableClaimsReport" class="table table-hover table-sm mb-0"
+                                       style="font-size: 0.85rem;">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Beneficiary</th>
+                                            <th>Provider</th>
+                                            <th>Trạng thái</th>
+                                            <th class="text-end">Số tiền ($)</th>
+                                            <th>Từ ngày</th>
+                                            <th>Đến ngày</th>
+                                            <th>Staff</th>
+                                            <th>Điều tra viên</th>
+                                            <th>Ngày tạo</th>
+                                            <th class="text-center">Risk Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="row : ${claimsData}">
+                                            <td>
+                                                <a th:href="@{/claims/{id}(id=${row.claimId})}"
+                                                   class="fw-bold text-decoration-none"
+                                                   th:text="${row.claimId}"></a>
+                                            </td>
+                                            <td class="text-truncate" style="max-width: 100px;"
+                                                th:text="${row.desynpufId}"></td>
+                                            <td th:text="${row.prvdrNum}"></td>
+                                            <td>
+                                                <span class="badge"
+                                                      th:classappend="${row.claimStatus == 'REJECTED'} ? 'bg-danger'
+                                                                    : (${row.claimStatus == 'APPROVED'} ? 'bg-success'
+                                                                    : (${row.claimStatus == 'FLAGGED'} ? 'bg-warning text-dark'
+                                                                    : (${row.claimStatus == 'UNDER_REVIEW'} ? 'bg-info text-dark'
+                                                                    : 'bg-secondary')))"
+                                                      th:text="${row.claimStatus}"></span>
+                                            </td>
+                                            <td class="text-end"
+                                                th:text="${row.clmPmtAmt != null ? '$' + #numbers.formatDecimal(row.clmPmtAmt, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                            <td th:text="${row.clmFromDt != null ? #temporals.format(row.clmFromDt, 'dd/MM/yyyy') : '-'}"></td>
+                                            <td th:text="${row.clmThruDt != null ? #temporals.format(row.clmThruDt, 'dd/MM/yyyy') : '-'}"></td>
+                                            <td th:text="${row.claimHandlerName}"></td>
+                                            <td th:text="${row.investigatorName}"></td>
+                                            <td th:text="${row.createdAt != null ? #temporals.format(row.createdAt, 'dd/MM/yyyy') : '-'}"></td>
+                                            <td class="text-center">
+                                                <span th:if="${row.riskPercentage != null}"
+                                                      class="badge"
+                                                      th:classappend="${row.riskPercentage >= 70} ? 'bg-danger'
+                                                                    : (${row.riskPercentage >= 40} ? 'bg-warning text-dark'
+                                                                    : 'bg-success')"
+                                                      th:text="${#numbers.formatDecimal(row.riskPercentage, 1, 1) + '%'}">
+                                                </span>
+                                                <span th:if="${row.riskPercentage == null}" class="text-muted">N/A</span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(claimsData)}">
+                                            <td colspan="11" class="text-center text-muted py-5">
+                                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                                Không có dữ liệu trong khoảng thời gian này.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ── Tab: Báo cáo Gian lận ── -->
+                        <div class="tab-pane fade"
+                             th:classappend="${activeTab == 'FRAUD'} ? 'show active' : ''"
+                             id="pane-fraud" role="tabpanel">
+                            <div class="d-flex justify-content-end p-3 border-bottom">
+                                <a th:href="@{/reports/export(type='FRAUD', from=${fromDate}, to=${toDate})}"
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-file-earmark-excel me-1"></i> Xuất tab này
+                                </a>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tableFraudReport" class="table table-hover table-sm mb-0"
+                                       style="font-size: 0.85rem;">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Beneficiary</th>
+                                            <th>Provider</th>
+                                            <th class="text-end">Số tiền ($)</th>
+                                            <th>Từ ngày</th>
+                                            <th>Đến ngày</th>
+                                            <th>Điều tra viên</th>
+                                            <th>Ngày xử lý</th>
+                                            <th class="text-center">Risk Score</th>
+                                            <th>Kết quả ML</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="row : ${fraudData}">
+                                            <td>
+                                                <a th:href="@{/claims/{id}(id=${row.claimId})}"
+                                                   class="fw-bold text-decoration-none text-danger"
+                                                   th:text="${row.claimId}"></a>
+                                            </td>
+                                            <td class="text-truncate" style="max-width: 100px;"
+                                                th:text="${row.desynpufId}"></td>
+                                            <td th:text="${row.prvdrNum}"></td>
+                                            <td class="text-end"
+                                                th:text="${row.clmPmtAmt != null ? '$' + #numbers.formatDecimal(row.clmPmtAmt, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                            <td th:text="${row.clmFromDt != null ? #temporals.format(row.clmFromDt, 'dd/MM/yyyy') : '-'}"></td>
+                                            <td th:text="${row.clmThruDt != null ? #temporals.format(row.clmThruDt, 'dd/MM/yyyy') : '-'}"></td>
+                                            <td th:text="${row.investigatorName}"></td>
+                                            <td th:text="${row.resolvedAt != null ? #temporals.format(row.resolvedAt, 'dd/MM/yyyy') : 'Chưa xử lý'}"></td>
+                                            <td class="text-center">
+                                                <span th:if="${row.riskPercentage != null}"
+                                                      class="badge"
+                                                      th:classappend="${row.riskPercentage >= 70} ? 'bg-danger'
+                                                                    : (${row.riskPercentage >= 40} ? 'bg-warning text-dark'
+                                                                    : 'bg-success')"
+                                                      th:text="${#numbers.formatDecimal(row.riskPercentage, 1, 1) + '%'}">
+                                                </span>
+                                                <span th:if="${row.riskPercentage == null}" class="text-muted">N/A</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary"
+                                                      th:text="${row.predictedLabel != null ? row.predictedLabel : 'N/A'}"></span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(fraudData)}">
+                                            <td colspan="10" class="text-center text-muted py-5">
+                                                <i class="bi bi-check-circle fs-3 d-block mb-2 text-success"></i>
+                                                Không có claims gian lận trong khoảng thời gian này.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ── Tab: Hiệu suất Nhân viên ── -->
+                        <div class="tab-pane fade"
+                             th:classappend="${activeTab == 'STAFF_PERFORMANCE'} ? 'show active' : ''"
+                             id="pane-staff" role="tabpanel">
+                            <div class="d-flex justify-content-end p-3 border-bottom">
+                                <a th:href="@{/reports/export(type='STAFF_PERFORMANCE', from=${fromDate}, to=${toDate})}"
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-file-earmark-excel me-1"></i> Xuất tab này
+                                </a>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tableStaffReport" class="table table-hover table-sm mb-0"
+                                       style="font-size: 0.85rem;">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID NV</th>
+                                            <th>Họ và tên</th>
+                                            <th>Vai trò</th>
+                                            <th class="text-center">Tổng Claims</th>
+                                            <th class="text-center">Đã duyệt</th>
+                                            <th class="text-center">Từ chối</th>
+                                            <th class="text-center">Đang xử lý</th>
+                                            <th class="text-end">Tổng tiền ($)</th>
+                                            <th class="text-center">Tỷ lệ Gian lận</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="row : ${staffData}">
+                                            <td th:text="${row.userId}"></td>
+                                            <td class="fw-semibold" th:text="${row.fullName}"></td>
+                                            <td>
+                                                <span class="badge"
+                                                      th:classappend="${row.role == 'ADMIN'} ? 'bg-danger'
+                                                                    : (${row.role == 'INVESTIGATOR'} ? 'bg-primary text-dark'
+                                                                    : 'bg-success')"
+                                                      th:text="${row.role}"></span>
+                                            </td>
+                                            <td class="text-center fw-bold" th:text="${row.totalClaims}">0</td>
+                                            <td class="text-center text-success" th:text="${row.approvedClaims}">0</td>
+                                            <td class="text-center text-danger" th:text="${row.rejectedClaims}">0</td>
+                                            <td class="text-center text-secondary" th:text="${row.pendingClaims}">0</td>
+                                            <td class="text-end"
+                                                th:text="${row.totalAmount != null ? '$' + #numbers.formatDecimal(row.totalAmount, 0, 'COMMA', 0, 'POINT') : '$0'}"></td>
+                                            <td class="text-center">
+                                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                                    <div class="progress flex-grow-1" style="height: 8px; max-width: 80px;">
+                                                        <div class="progress-bar"
+                                                             th:classappend="${row.fraudRate >= 50} ? 'bg-danger'
+                                                                           : (${row.fraudRate >= 20} ? 'bg-warning'
+                                                                           : 'bg-success')"
+                                                             role="progressbar"
+                                                             th:style="'width:' + ${row.fraudRate} + '%'"
+                                                             style="min-width: 2px;"></div>
+                                                    </div>
+                                                    <span class="small"
+                                                          th:text="${#numbers.formatDecimal(row.fraudRate, 1, 1) + '%'}">0%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(staffData)}">
+                                            <td colspan="9" class="text-center text-muted py-5">
+                                                <i class="bi bi-people fs-3 d-block mb-2"></i>
+                                                Không có dữ liệu nhân viên trong khoảng thời gian này.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div><!-- end tab-content -->
+                </div><!-- end card-body -->
+            </div><!-- end card -->
+
+        </main>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+</div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<script th:inline="javascript">
+/* ── Update export link when filter changes ── */
+document.addEventListener('DOMContentLoaded', function () {
+    const exportBtn    = document.getElementById('exportBtn');
+    const fromDateInput = document.getElementById('fromDate');
+    const toDateInput   = document.getElementById('toDate');
+
+    function updateExportLink() {
+        const from = fromDateInput.value;
+        const to   = toDateInput.value;
+        if (from && to) {
+            exportBtn.href = `/reports/export?type=ALL&from=${from}&to=${to}`;
+        }
+    }
+
+    fromDateInput.addEventListener('change', updateExportLink);
+    toDateInput.addEventListener('change', updateExportLink);
+
+    /* ── DataTables init ── */
+    const dtOptions = {
+        pageLength: 25,
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json'
+        },
+        dom: '<"d-flex justify-content-between align-items-center mb-2"lf>rtip',
+        order: [ [0, 'desc'] ]
+    };
+
+    if (typeof $.fn.DataTable !== 'undefined') {
+        $('#tableClaimsReport').DataTable(dtOptions);
+        $('#tableFraudReport').DataTable(dtOptions);
+        $('#tableStaffReport').DataTable({ ...dtOptions, order: [ [3, 'desc'] ] });
+    }
+
+    /* ── Sync active tab with hidden input & keep on reload ── */
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (btn) {
+        btn.addEventListener('shown.bs.tab', function (e) {
+            const tabId = e.target.getAttribute('data-bs-target');
+            const tabMap = {
+                '#pane-claims': 'CLAIMS',
+                '#pane-fraud':  'FRAUD',
+                '#pane-staff':  'STAFF_PERFORMANCE'
+            };
+            document.querySelector('input[name="tab"]').value = tabMap[tabId] || 'CLAIMS';
+        });
+    });
+});
+</script>
+
+<!-- DataTables CSS/JS if not already in scripts fragment -->
+<link rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"
+      th:if="true">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js" defer></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js" defer></script>
+
+</body>
+</html>

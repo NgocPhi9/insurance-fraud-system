@@ -30,6 +30,14 @@ public interface ClaimShapFactorRepository extends JpaRepository<ClaimShapFactor
            "ORDER BY AVG(ABS(s.shapImpact)) DESC")
     List<Object[]> findTopFeaturesByImpact(Pageable pageable);
 
+    @Query("SELECT s.featureName, AVG(ABS(s.shapImpact)) " +
+           "FROM ClaimShapFactor s " +
+           "WHERE s.claimPrediction.rawClaim.claimStatus IN ('FLAGGED', 'REJECTED') " +
+           "  AND s.claimPrediction.predictedAt >= :startDate " +
+           "GROUP BY s.featureName " +
+           "ORDER BY AVG(ABS(s.shapImpact)) DESC")
+    List<Object[]> findTopFeaturesByImpactSince(@Param("startDate") java.time.LocalDateTime startDate, Pageable pageable);
+
     // ── Scoped theo Investigator (dùng cho INVESTIGATOR dashboard) ───────────
 
     // Top features hay bị gắn cờ nhất trong các claims được giao cho investigator
@@ -41,6 +49,15 @@ public interface ClaimShapFactorRepository extends JpaRepository<ClaimShapFactor
            "ORDER BY COUNT(s) DESC")
     List<Object[]> findTopFeaturesByFrequencyForInvestigator(@Param("investigatorId") Long investigatorId, Pageable pageable);
 
+    @Query("SELECT s.featureName, COUNT(s) " +
+           "FROM ClaimShapFactor s " +
+           "WHERE s.claimPrediction.rawClaim.investigator.userId = :investigatorId " +
+           "  AND s.claimPrediction.rawClaim.claimStatus IN ('FLAGGED', 'REJECTED') " +
+           "  AND s.claimPrediction.predictedAt >= :startDate " +
+           "GROUP BY s.featureName " +
+           "ORDER BY COUNT(s) DESC")
+    List<Object[]> findTopFeaturesByFrequencyForInvestigatorSince(@Param("investigatorId") Long investigatorId, @Param("startDate") java.time.LocalDateTime startDate, Pageable pageable);
+
     // Top features có tác động cao nhất trong các claims được giao cho investigator
     @Query("SELECT s.featureName, AVG(ABS(s.shapImpact)) " +
            "FROM ClaimShapFactor s " +
@@ -49,4 +66,13 @@ public interface ClaimShapFactorRepository extends JpaRepository<ClaimShapFactor
            "GROUP BY s.featureName " +
            "ORDER BY AVG(ABS(s.shapImpact)) DESC")
     List<Object[]> findTopFeaturesByImpactForInvestigator(@Param("investigatorId") Long investigatorId, Pageable pageable);
+
+    @Query("SELECT s.featureName, AVG(ABS(s.shapImpact)) " +
+           "FROM ClaimShapFactor s " +
+           "WHERE s.claimPrediction.rawClaim.investigator.userId = :investigatorId " +
+           "  AND s.claimPrediction.rawClaim.claimStatus IN ('FLAGGED', 'REJECTED') " +
+           "  AND s.claimPrediction.predictedAt >= :startDate " +
+           "GROUP BY s.featureName " +
+           "ORDER BY AVG(ABS(s.shapImpact)) DESC")
+    List<Object[]> findTopFeaturesByImpactForInvestigatorSince(@Param("investigatorId") Long investigatorId, @Param("startDate") java.time.LocalDateTime startDate, Pageable pageable);
 }
