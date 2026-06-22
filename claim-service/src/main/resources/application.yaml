@@ -25,6 +25,9 @@ spring:
 #  level:
 #    org.springframework.security: DEBUG
 #    org.springframework.beans.factory: DEBUG
+ml:
+  images:
+    base-url: ${ML_IMAGES_BASE_URL:http://localhost:8000}
 
 app:
   dashboard:

@@ -104,6 +104,7 @@ public class ClaimMapper {
 
         return ClaimResponse.builder()
                 .rawClaimId(claim.getRawClaimId())
+                .createdAt(claim.getCreatedAt())
                 .desynpufId(claim.getDesynpufId())
                 .segment(claim.getSegment())
                 .clmFromDt(claim.getClmFromDt())

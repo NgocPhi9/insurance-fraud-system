@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -15,6 +16,7 @@ import java.util.List;
 public class ClaimResponse {
 
     private Long rawClaimId;
+    private LocalDateTime createdAt;
     private String desynpufId;
     private String segment;
     private LocalDate clmFromDt;

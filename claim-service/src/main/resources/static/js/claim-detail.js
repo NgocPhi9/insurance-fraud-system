@@ -119,10 +119,15 @@ function renderPrediction(data) {
         methodEl.textContent = data.modelSelected ?? data.shapMethod ?? 'SHAP';
     }
 
+    const versionEl = document.getElementById('mlVersion');
+    if (versionEl) {
+        versionEl.textContent = data.modelVersion ?? '—';
+    }
+
     const shapFactorsEl = document.getElementById('shapFactors');
     if (shapFactorsEl) {
         shapFactorsEl.innerHTML = (data.topFactors ?? []).map((f, i) => {
-            const isIncrease = f.direction?.includes('high');
+            const isIncrease = f.direction?.includes('increase');
             return `
             <div class="d-flex align-items-center gap-2 mb-2">
                 <span class="badge bg-secondary">${i + 1}</span>

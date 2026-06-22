@@ -80,7 +80,7 @@ public class PredictionMapper {
         return ClaimPrediction.builder()
                 .rawClaim(rawClaim)
                 .modelName(result.getModelSelected())
-                .modelVersion("1.0.0")
+                .modelVersion(result.getModelVersion() != null ? result.getModelVersion() : "1.0.0")
                 .predictedLabel(result.getPrediction())
                 .anomalyScore(result.getAnomalyScore())
                 .riskPercentage(result.getRiskPercentage())
@@ -142,6 +142,7 @@ public class PredictionMapper {
                 .topFactors(factors)
                 .predictedAt(prediction.getPredictedAt())
                 .modelSelected(prediction.getModelName())
+                .modelVersion(prediction.getModelVersion())
                 .build();
     }
 }

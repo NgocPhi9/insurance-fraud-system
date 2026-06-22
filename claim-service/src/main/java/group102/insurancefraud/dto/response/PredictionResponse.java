@@ -25,5 +25,6 @@ public class PredictionResponse {
     private String shapMethod;
     private List<ShapFactorDTO> topFactors;
     private String modelSelected;
+    private String modelVersion;
     private LocalDateTime predictedAt;
 }

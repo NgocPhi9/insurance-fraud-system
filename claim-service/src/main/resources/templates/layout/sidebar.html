@@ -94,28 +94,36 @@
             <div class="collapse sidebar-submenu" id="predictionsMenu"
                  th:classappend="${activeGroup == 'predictions'} ? 'show' : ''">
                 <ul class="nav flex-column ms-3 mt-1">
-<!--                    <li class="nav-item">-->
-<!--                        <a th:href="@{/predictions}"-->
-<!--                           th:classappend="${activePage == 'predictions-list'} ? 'active' : ''"-->
-<!--                           class="nav-link d-flex align-items-center gap-2 rounded py-1">-->
-<!--                            <i class="bi bi-bar-chart-line small"></i>-->
-<!--                            <span>Kết quả ML</span>-->
-<!--                        </a>-->
-<!--                    </li>-->
-<!--                    <li class="nav-item">-->
-<!--                        <a th:href="@{/predictions/alerts}"-->
-<!--                           th:classappend="${activePage == 'predictions-alerts'} ? 'active' : ''"-->
-<!--                           class="nav-link d-flex align-items-center gap-2 rounded py-1">-->
-<!--                            <i class="bi bi-exclamation-triangle small"></i>-->
-<!--                            <span>Cảnh báo</span>-->
-<!--                        </a>-->
-<!--                    </li>-->
+                    <!--                    <li class="nav-item">-->
+                    <!--                        <a th:href="@{/predictions}"-->
+                    <!--                           th:classappend="${activePage == 'predictions-list'} ? 'active' : ''"-->
+                    <!--                           class="nav-link d-flex align-items-center gap-2 rounded py-1">-->
+                    <!--                            <i class="bi bi-bar-chart-line small"></i>-->
+                    <!--                            <span>Kết quả ML</span>-->
+                    <!--                        </a>-->
+                    <!--                    </li>-->
+                    <!--                    <li class="nav-item">-->
+                    <!--                        <a th:href="@{/predictions/alerts}"-->
+                    <!--                           th:classappend="${activePage == 'predictions-alerts'} ? 'active' : ''"-->
+                    <!--                           class="nav-link d-flex align-items-center gap-2 rounded py-1">-->
+                    <!--                            <i class="bi bi-exclamation-triangle small"></i>-->
+                    <!--                            <span>Cảnh báo</span>-->
+                    <!--                        </a>-->
+                    <!--                    </li>-->
                     <li class="nav-item">
                         <a th:href="@{/fraud-intelligence}"
                            th:classappend="${activePage == 'fraud-suspects'} ? 'active' : ''"
                            class="nav-link d-flex align-items-center gap-2 rounded py-1">
                             <i class="bi bi-shield-exclamation small"></i>
                             <span>Đối tượng nghi ngờ</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/admin/ml/retrain}"
+                           th:classappend="${activePage == 'ml-retrain'} ? 'active' : ''"
+                           class="nav-link d-flex align-items-center gap-2 rounded py-1">
+                            <i class="bi bi-cpu small"></i>
+                            <span>Retrain Model</span>
                         </a>
                     </li>
                 </ul>

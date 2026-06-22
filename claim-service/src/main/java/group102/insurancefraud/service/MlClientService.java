@@ -2,6 +2,8 @@ package group102.insurancefraud.service;
 
 import group102.insurancefraud.dto.request.PredictRequest;
 import group102.insurancefraud.dto.response.AnomalyResultDTO;
+import group102.insurancefraud.dto.response.RetrainResponseDTO;
+import group102.insurancefraud.dto.response.RetrainStatusResponseDTO;
 import group102.insurancefraud.dto.response.ShapResultDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,49 @@ public class MlClientService {
         } catch (Exception e) {
             log.error("ML /explain failed: {}", e.getMessage());
             throw new RuntimeException("ML shap service unavailable");
+        }
+    }
+
+    public RetrainResponseDTO getRetrainInfo() {
+        try {
+            return mlWebClient.get()
+                    .uri("/model/history")
+                    .retrieve()
+                    .bodyToMono(RetrainResponseDTO.class)
+                    .block();
+        } catch (Exception e) {
+            log.error("ML GET /model/history failed: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public boolean getRetrainStatus() {
+        try {
+            RetrainStatusResponseDTO response = mlWebClient.get()
+                    .uri("/retrain/status")
+                    .retrieve()
+                    .bodyToMono(RetrainStatusResponseDTO.class)
+                    .block();
+            return response != null && response.isRetraining();
+        } catch (Exception e) {
+            log.error("ML GET /retrain/status failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    public RetrainResponseDTO retrain() {
+        try {
+            return mlWebClient.post()
+                    .uri("/retrain")
+                    .retrieve()
+                    .bodyToMono(RetrainResponseDTO.class)
+                    .block();
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+            log.error("ML /retrain failed: {} - Body: {}", e.getMessage(), e.getResponseBodyAsString());
+            throw new RuntimeException("ML retrain service failed");
+        } catch (Exception e) {
+            log.error("ML /retrain failed: {}", e.getMessage());
+            throw new RuntimeException("ML retrain service unavailable");
         }
     }
 }

@@ -66,8 +66,8 @@
                                 </span>
                             </div>
                             <div class="ms-auto text-end">
-                                <div class="text-muted small mb-1">Mã hồ sơ</div>
-                                <strong th:text="'#' + ${claim.rawClaimId}"></strong>
+                                <div class="text-muted small">Ngày tạo claim</div>
+                                <div th:text="${claim.createdAt != null ? #temporals.format(claim.createdAt, 'dd/MM/yyyy HH:mm') : '—'}"></div>
                             </div>
                         </div>
                     </div>
@@ -294,16 +294,22 @@
 
                                 <!-- Anomaly score + method -->
                                 <div class="row g-2 mb-3">
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <div class="bg-light rounded p-2 text-center">
                                             <div class="text-muted small">Anomaly Score</div>
                                             <div class="fw-semibold" id="mlAnomalyScore"></div>
                                         </div>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <div class="bg-light rounded p-2 text-center">
                                             <div class="text-muted small">Model</div>
                                             <div class="fw-semibold" id="mlMethod"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="bg-light rounded p-2 text-center">
+                                            <div class="text-muted small">Version</div>
+                                            <div class="fw-semibold" id="mlVersion"></div>
                                         </div>
                                     </div>
                                 </div>

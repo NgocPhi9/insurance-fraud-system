@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Retrain ML Model')}"></head>
+<body class="bg-light">
+<div class="wrapper d-flex">
+    <div th:replace="~{layout/sidebar :: sidebar}"></div>
+    <div id="sidebarOverlay" class="sidebar-overlay d-none"></div>
+    <div class="main-content d-flex flex-column flex-grow-1">
+        <div th:replace="~{layout/navbar :: navbar}"></div>
+
+        <main class="flex-grow-1 p-4">
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold mb-0">Quản lý Retrain ML Model</h5>
+                </div>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${retrainInProgress}" class="alert alert-info border-0 shadow-sm d-flex align-items-start gap-3" role="status">
+                <span class="spinner-border spinner-border-sm text-primary mt-1" aria-hidden="true"></span>
+                <div class="text-start">
+                    <div class="fw-semibold">Đang train model</div>
+                    <div class="small">Yêu cầu retrain đã được gửi tới ML service. Lịch sử model và biểu đồ đánh giá sẽ cập nhật sau khi quá trình huấn luyện hoàn tất.</div>
+                </div>
+            </div>
+
+            <!-- Current Model Info Card -->
+            <div th:if="${currentInfo}" class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-info-circle me-2 text-info"></i>
+                        Thông tin Model Hiện tại (Lịch sử Retrain)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="text-muted small">Baseline Version:</span>
+                        <span class="fw-bold ms-2" th:text="${currentInfo.baselineVersion}"></span>
+                    </div>
+
+                    <!-- Nếu không có retrain nào -->
+                    <div th:if="${currentInfo.retrains == null or currentInfo.retrains.isEmpty()}" class="text-muted fst-italic">
+                        Chưa có dữ liệu retrain nào. Hệ thống đang chạy trên Baseline Version.
+                    </div>
+
+                    <div th:each="rt : ${currentInfo.retrains}" class="border rounded p-4 mb-4 bg-light">
+                        <div class="row align-items-center mb-4 pb-3 border-bottom border-secondary-subtle">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-dark mb-1">
+                                    <i class="bi bi-tag-fill me-2 text-primary"></i>Version: <span th:text="${rt.version}"></span>
+                                </h6>
+                                <div class="text-muted small">
+                                    <i class="bi bi-clock me-1"></i><span th:text="${rt.displayTimestamp}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Images Section -->
+                        <div class="row g-4">
+                            <!-- ROC Curve -->
+                            <div class="col-md-6" th:if="${rt.rocCurvesUrl}">
+                                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
+                                    <div class="card-body p-2 d-flex align-items-center justify-content-center bg-white">
+                                        <img th:src="${mlImagesBaseUrl + rt.rocCurvesUrl}" class="img-fluid rounded" alt="ROC Curves">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PR Curve -->
+                            <div class="col-md-6" th:if="${rt.prCurvesUrl}">
+                                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
+                                    <div class="card-body p-2 d-flex align-items-center justify-content-center bg-white">
+                                        <img th:src="${mlImagesBaseUrl + rt.prCurvesUrl}" class="img-fluid rounded" alt="PR Curves">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Confusion Matrix -->
+                            <div class="col-12" th:if="${rt.confusionMatricesUrl}">
+                                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
+                                    <div class="card-body p-2 d-flex align-items-center justify-content-center bg-white">
+                                        <img th:src="${mlImagesBaseUrl + rt.confusionMatricesUrl}" class="img-fluid rounded w-100" alt="Confusion Matrices">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Score Distributions -->
+                            <div class="col-12" th:if="${rt.scoreDistributionsUrl}">
+                                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
+                                    <div class="card-body p-2 d-flex align-items-center justify-content-center bg-white">
+                                        <img th:src="${mlImagesBaseUrl + rt.scoreDistributionsUrl}" class="img-fluid rounded w-100" alt="Score Distributions">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4 text-center">
+                    <i class="bi bi-cpu text-primary mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="fw-semibold">Bắt đầu quá trình huấn luyện lại</h5>
+                    <p class="text-muted mb-4 mx-auto" style="max-width: 600px;">
+                        Việc này sẽ gửi yêu cầu tới ML Service để huấn luyện lại mô hình phát hiện gian lận. 
+                        Quá trình có thể mất một chút thời gian. Hệ thống vẫn tiếp tục phục vụ các yêu cầu phân tích hiện tại bằng mô hình cũ cho tới khi việc huấn luyện hoàn tất.
+                    </p>
+                    <button type="button"
+                            class="btn btn-primary px-4 py-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#confirmRetrainModal"
+                            th:disabled="${retrainInProgress}">
+                        <span th:if="${retrainInProgress}" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                        <i th:unless="${retrainInProgress}" class="bi bi-play-circle me-2"></i>
+                        <span th:text="${retrainInProgress} ? 'Đang train model...' : 'Thực hiện Retrain'">Thực hiện Retrain</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Card -->
+            <div th:if="${retrainResult}" class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-bar-chart-line me-2 text-success"></i>
+                        Kết quả Retrain
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="text-muted small">Baseline Version:</span>
+                        <span class="fw-bold ms-2" th:text="${retrainResult.baselineVersion}"></span>
+                    </div>
+
+                    <div th:each="rt : ${retrainResult.retrains}" class="border rounded p-4 mb-4 bg-white">
+                        <div class="row align-items-center mb-4 pb-3 border-bottom">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary mb-1">
+                                    <i class="bi bi-tag-fill me-2"></i>Version: <span th:text="${rt.version}"></span>
+                                </h6>
+                                <div class="text-muted small">
+                                    <i class="bi bi-clock me-1"></i><span th:text="${rt.displayTimestamp}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Images Section -->
+                        <div class="row g-4">
+                            <!-- ROC Curve -->
+                            <div class="col-md-6" th:if="${rt.rocCurvesUrl}">
+                                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
+                                    <div class="card-body p-2 d-flex align-items-center justify-content-center bg-white">
+                                        <img th:src="${mlImagesBaseUrl + rt.rocCurvesUrl}" class="img-fluid rounded" alt="ROC Curves">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PR Curve -->
+                            <div class="col-md-6" th:if="${rt.prCurvesUrl}">
+                                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
+                                    <div class="card-body p-2 d-flex align-items-center justify-content-center bg-white">
+                                        <img th:src="${mlImagesBaseUrl + rt.prCurvesUrl}" class="img-fluid rounded" alt="PR Curves">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Confusion Matrix -->
+                            <div class="col-12" th:if="${rt.confusionMatricesUrl}">
+                                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
+                                    <div class="card-body p-2 d-flex align-items-center justify-content-center bg-white">
+                                        <img th:src="${mlImagesBaseUrl + rt.confusionMatricesUrl}" class="img-fluid rounded w-100" alt="Confusion Matrices">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Score Distributions -->
+                            <div class="col-12" th:if="${rt.scoreDistributionsUrl}">
+                                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
+                                    <div class="card-body p-2 d-flex align-items-center justify-content-center bg-white">
+                                        <img th:src="${mlImagesBaseUrl + rt.scoreDistributionsUrl}" class="img-fluid rounded w-100" alt="Score Distributions">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
+</div>
+<div class="modal fade" id="confirmRetrainModal" tabindex="-1" aria-labelledby="confirmRetrainModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form th:action="@{/admin/ml/retrain/execute}" method="post" id="retrainForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmRetrainModalLabel">Xác nhận retrain model</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng" id="closeRetrainModalBtn"></button>
+                </div>
+                <div class="modal-body">
+                    <div th:if="${retrainModalError}" class="alert alert-danger py-2" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${retrainModalError}"></span>
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label for="adminPassword" class="form-label">Mật khẩu tài khoản admin</label>
+                        <input type="password" class="form-control" id="adminPassword" name="adminPassword" autocomplete="current-password" required>
+                    </div>
+                    <div class="form-check text-start">
+                        <input class="form-check-input" type="checkbox" name="confirmRetrain" value="true" id="confirmRetrainCheck" required>
+                        <label class="form-check-label" for="confirmRetrainCheck">
+                            Tôi xác nhận muốn gửi yêu cầu retrain model.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelRetrainBtn">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="btnRetrain">
+                        <i class="bi bi-check-circle me-2"></i>Xác nhận retrain
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('retrainForm');
+        const btn = document.getElementById('btnRetrain');
+        const cancelBtn = document.getElementById('cancelRetrainBtn');
+        const closeBtn = document.getElementById('closeRetrainModalBtn');
+        const passwordInput = document.getElementById('adminPassword');
+        const modalEl = document.getElementById('confirmRetrainModal');
+        
+        if (form && btn) {
+            form.addEventListener('submit', function() {
+                btn.disabled = true;
+                cancelBtn?.setAttribute('disabled', 'disabled');
+                closeBtn?.setAttribute('disabled', 'disabled');
+                passwordInput?.setAttribute('readonly', 'readonly');
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Đang gửi yêu cầu...';
+            });
+        }
+
+        if (modalEl && [[${showRetrainModal == true}]]) {
+            new bootstrap.Modal(modalEl).show();
+        }
+
+        // Auto-refresh when retraining finishes
+        const inProgress = [[${retrainInProgress == true}]];
+        if (inProgress) {
+            console.log("Retraining in progress, starting status polling...");
+            const statusInterval = setInterval(() => {
+                fetch('/admin/ml/retrain/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.inProgress) {
+                            console.log("Retraining finished! Reloading page...");
+                            clearInterval(statusInterval);
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching retrain status:', error);
+                    });
+            }, 5000); // Check every 5 seconds
+        }
+    });
+</script>
+</body>
+</html>
